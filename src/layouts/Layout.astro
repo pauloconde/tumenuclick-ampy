@@ -193,7 +193,7 @@ if (typography) {
             href={def.attributes.href}
           />
         ) : (
-          <style set:html={def.content} />
+          <style is:inline set:html={def.content} />
         ),
       )
     }
@@ -226,6 +226,7 @@ if (typography) {
     {
       (dynamicThemeStyles || typographyCSS) ? (
         <style
+          is:inline
           set:html={`:root {\n    ${dynamicThemeStyles || ''}\n    ${typographyCSS || ''}\n  }`}
         />
       ) : null

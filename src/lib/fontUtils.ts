@@ -38,7 +38,7 @@ export function getFontDefinition(config: FontConfig) {
       @font-face {
         font-family: '${familyName}';
         src: url('${config.customFileUrl}')${formatSnippet};
-        font-weight: ${config.weight || '400'};
+        font-weight: 100 900;
         font-style: ${config.style || 'normal'};
         font-display: swap;
       }
