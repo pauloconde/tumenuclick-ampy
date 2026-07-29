@@ -1,0 +1,123 @@
+---
+// 1. Definición de Propiedades
+// Usamos TypeScript para asegurar que el componente reciba el objeto 'item' esperado.
+
+interface MenuItemDetailedItem {
+    name: string;
+    slug?: string;
+    subtitle?: string;
+    price: string;
+    price2?: string;
+    price3?: string;
+    description: string;
+    imgSrc?: string;
+    alt?: string;
+    bestSeller?: boolean;
+}
+
+interface Props {
+    item: MenuItemDetailedItem;
+    sectionName: string;
+    currencySymbol: string;
+    priceDivider: string;
+    bestSellersTitleSingular: string;
+}
+
+// 2. Extraer las propiedades
+const { item, sectionName, currencySymbol, priceDivider, bestSellersTitleSingular } = Astro.props;
+import { getImageUrl } from "../../../lib/imageUrl";
+
+// Obtener URL de imagen (Sanity o local)
+const imageUrl = getImageUrl(item.imgSrc, 400);
+---
+
+<div 
+    class="menu-item-inner-highlight flex items-start space-x-4 cursor-pointer dish-detail-trigger p-3 rounded-xl"
+    data-name={item.name}
+    data-slug={item.slug}
+    data-price={item.price}
+    data-price2={item.price2}
+    data-price3={item.price3}
+    data-description={item.description}
+    data-image={imageUrl}
+    data-currency={currencySymbol}
+    data-best-seller={item.bestSeller ? "true" : "false"}
+    data-best-seller-label={bestSellersTitleSingular || "Favorito"}
+    data-section={sectionName}
+>
+    <img
+        alt={item.alt || item.name}
+        class="w-24 h-24 object-cover rounded-lg flex-shrink-0"
+        src={imageUrl}
+        loading="lazy"
+        decoding="async"
+    />
+
+    <div class="flex-grow">
+        <div class="flex justify-between items-start">
+            <h3 class="font-bold text-lg text-text-title">{item.name}</h3>
+            <p class="font-bold text-text-price ml-2 flex-shrink-0">
+                {currencySymbol}{item.price}
+                {
+                    item.price2 && (
+                        <span class="ml-1">
+                            {priceDivider} 
+                        </span>
+                        <span class="ml-1">
+                            {currencySymbol}{item.price2}
+                        </span>
+                    )
+                }
+                {
+                    item.price3 && (
+                         <span class="ml-1">
+                            {priceDivider} 
+                        </span>
+                        <span class="ml-1">
+                            {currencySymbol}{item.price3}
+                        </span>
+                    )
+                }
+            </p>
+        </div>
+
+        <p style="white-space: pre-line" class="text-text-subtitle text-sm mt-1">
+            {item.description}
+        </p>
+    </div>
+</div>
+
+<style>
+    /* Inner Highlight Strategy - Tendencia Moderna (Vercel, Linear, Tailwind UI) */
+    .menu-item-inner-highlight {
+        /* Background apenas visible distinto al fondo */
+        background-color: var(--color-menu-item-bg);
+        
+        /* Borde sutil alrededor */
+        border: 1px solid var(--color-menu-item-border);
+        
+        /* TRUCO CLAVE: Luz interna en borde superior + sombra tenue inferior */
+        /* box-shadow removed to avoid hardcoded colors */
+        
+        /* Transición suave */
+        transition: background-color 0.2s ease, box-shadow 0.2s ease;
+        
+        /* Tap highlight removal para móvil */
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Feedback al tocar - Se ilumina */
+    .menu-item-inner-highlight:active {
+        background-color: color-mix(in srgb, var(--color-menu-item-bg) 100%, #fff 15%);
+        /* box-shadow removed */
+        transform: scale(0.99);
+    }
+
+    /* Hover para desktop (sutil) */
+    @media (hover: hover) {
+        .menu-item-inner-highlight:hover {
+            background-color: color-mix(in srgb, var(--color-menu-item-bg) 100%, #fff 8%);
+            /* box-shadow removed */
+        }
+    }
+</style>

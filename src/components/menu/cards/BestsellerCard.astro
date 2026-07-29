@@ -1,0 +1,119 @@
+---
+interface Props {
+    item: {
+        name: string;
+        slug?: string;
+        price: string;
+        price2?: string;
+        price3?: string;
+        description: string;
+        imgSrc: string;
+        alt: string;
+        bestSeller?: boolean;
+        isNew?: boolean;
+        servings?: number;
+        protein?: number;
+        gallery?: string[];
+        variantGroups?: any[];
+    };
+    currencySymbol: string;
+    priceDivider: string;
+    bestSellersTitleSingular: string;
+    newsTitleSingular?: string;
+}
+
+import { getImageUrl } from "../../../lib/imageUrl";
+import { getServingsIconHtml } from "../icons/ServingsIcon";
+
+const { item, currencySymbol, priceDivider, bestSellersTitleSingular, newsTitleSingular } = Astro.props;
+
+// Obtener URL de imagen (Sanity o local)
+const imageUrl = getImageUrl(item.imgSrc, 300);
+
+// Generar HTML del icono de porciones
+const servingsIconHtml = getServingsIconHtml(item.servings || 0);
+
+// Prepare variant images map
+const variantImages: Record<string, string> = {};
+if (item.variantGroups) {
+    item.variantGroups.forEach((group: any) => {
+        if (group.variants) {
+            group.variants.forEach((variant: any) => {
+                const img = getImageUrl(variant.image, 800);
+                if (img) {
+                    variantImages[variant.name] = img;
+                }
+            });
+        }
+    });
+}
+
+const galleryUrls = item.gallery ? item.gallery.map((img: string) => getImageUrl(img, 800)) : [];
+---
+
+<div class="flex-shrink-0 w-40">
+    <div 
+        class="bg-bestsellers-card-bg rounded-lg shadow-md p-2 cursor-pointer product-detail-trigger transition-transform hover:scale-[1.02] h-[240px] flex flex-col relative"
+        data-name={item.name}
+        data-slug={item.slug}
+        data-price={item.price}
+        data-price2={item.price2}
+        data-price3={item.price3}
+        data-description={item.description}
+        data-image={imageUrl}
+        data-currency={currencySymbol}
+        data-best-seller={item.bestSeller ? "true" : "false"}
+        data-best-seller-label={bestSellersTitleSingular || "Favorito"}
+        data-is-new={item.isNew ? "true" : "false"}
+        data-new-label={newsTitleSingular || "Nuevo"}
+        data-new-label={newsTitleSingular || "Nuevo"}
+        data-servings={String(item.servings || 0)}
+        data-protein={String(item.protein || 0)}
+        data-gallery={JSON.stringify(galleryUrls)}
+        data-variant-images={JSON.stringify(variantImages)}
+    >
+        {item.isNew && (
+            <span
+                class="absolute -top-3 -right-3 z-10 w-auto px-2 py-0.5 text-[0.65rem] font-bold rounded-full uppercase tracking-wide shadow-sm"
+                style="background-color: var(--color-new-badge-bg); color: var(--color-new-badge-text); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);"
+            >
+                {newsTitleSingular || "Nuevo"}
+            </span>
+        )}
+        <h3 class="font-bold text-bestsellers-text-name line-clamp-2 min-h-[2.5rem] mb-2 flex items-center gap-1">
+            {item.name}
+            {servingsIconHtml && <Fragment set:html={servingsIconHtml} />}
+        </h3>
+        <img
+            alt={item.alt || item.name}
+            class="w-full h-32 object-cover rounded-md"
+            src={imageUrl}
+            loading="lazy"
+            decoding="async"
+            style="background-color: var(--color-product-bg, transparent); background-image: var(--product-bg-image, none); background-size: cover; background-position: center;"
+        />
+        <p class="text-bestsellers-text-price mt-auto text-right">
+            {currencySymbol}{item.price}
+                {
+                    item.price2 && (
+                        <span class="ml-1">
+                            {priceDivider} 
+                        </span>
+                        <span class="ml-1">
+                            {currencySymbol}{item.price2}
+                        </span>
+                    )
+                }
+                {
+                    item.price3 && (
+                        <span class="ml-1">
+                            {priceDivider} 
+                        </span>
+                        <span class="ml-1">
+                            {currencySymbol}{item.price3}
+                        </span>
+                    )
+                }
+        </p>
+    </div>
+</div>

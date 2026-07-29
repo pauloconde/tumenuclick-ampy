@@ -1,0 +1,122 @@
+---
+import { getImageUrl } from "../../lib/imageUrl";
+
+interface Props {
+    sections: any[];
+    brand: any;
+    enableOrdering?: boolean;
+}
+
+const { sections, brand, enableOrdering = true } = Astro.props;
+
+const logoUrl = brand?.logo
+    ? getImageUrl(brand.logo)
+    : "/images/placeholder.svg";
+---
+
+<nav
+    class="sticky top-0 z-50 bg-navbar-bg shadow-md p-4 flex justify-between items-center gap-4"
+>
+    <div class="flex items-center flex-shrink-0">
+        <h1 class="sr-only">{brand?.name || "Restaurante"}</h1>
+        <img
+            src={logoUrl}
+            alt={brand?.name || "Logo"}
+            class="h-12 sm:h-16 w-auto object-contain transition-all duration-300"
+            height="64"
+            loading="eager"
+            decoding="async"
+            fetchpriority="high"
+            aria-hidden="true"
+        />
+    </div>
+
+    <div class="flex items-center gap-4 flex-1 justify-end min-w-0">
+        {
+            sections && sections.length > 1 && (
+                <div class="relative">
+                    <label for="section-select" class="sr-only">
+                        Navegar a sección
+                    </label>
+                    <select
+                        id="section-select"
+                        class="navbar-select appearance-none bg-navbar-select-bg border border-navbar-select-border text-navbar-select-text py-2 px-4 pr-8 rounded-[var(--radius-navbar-select)] leading-tight focus:outline-none truncate max-w-[140px] sm:max-w-xs"
+                    >
+                        <option value="" disabled selected>
+                            Ir a...
+                        </option>
+                        {sections.map((section: any) => (
+                            <option
+                                value={section.title
+                                    .toLowerCase()
+                                    .replace(/\s+/g, "-")
+                                    .normalize("NFD")
+                                    .replace(/[\u0300-\u036f]/g, "")}
+                            >
+                                {section.title}
+                            </option>
+                        ))}
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-navbar-select-icon">
+                        <svg
+                            class="fill-current h-4 w-4"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                        >
+                            <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                        </svg>
+                    </div>
+                </div>
+            )
+        }
+    </div>
+</nav>
+
+<script>
+    import { selectedCategory } from "../../stores/menuStore";
+
+    const select = document.getElementById(
+        "section-select",
+    ) as HTMLSelectElement;
+
+    if (select) {
+        select.addEventListener("change", (e) => {
+            const targetId = (e.target as HTMLSelectElement).value;
+            const element = document.getElementById(targetId);
+
+            if (element) {
+                // Classic Mode OR Single Category View (if rendered)
+                element.scrollIntoView({ behavior: "smooth" });
+                // Also update store to keep sync if we are in categories mode and user somehow sees the section
+                selectedCategory.set(targetId);
+            } else {
+                // Categories Mode (Grid View) - Element doesn't exist yet
+                // Update store to trigger MenuController to show the section
+                selectedCategory.set(targetId);
+            }
+        });
+
+        // Optional: Listen to store changes to update select value if changed from elsewhere (e.g. clicking a card)
+        selectedCategory.subscribe((slug) => {
+            if (slug && select) {
+                select.value = slug;
+            } else if (!slug && select) {
+                select.value = ""; // Reset to default
+            }
+        });
+    }
+</script>
+
+<style>
+    /* Style for select dropdown options */
+    .navbar-select option {
+        background-color: var(--color-navbar-select-option-bg);
+        color: var(--color-navbar-select-option-text);
+    }
+
+    .navbar-select option:hover,
+    .navbar-select option:checked {
+        background-color: var(--color-navbar-select-option-hover-bg);
+        color: var(--color-navbar-select-option-hover-text);
+    }
+</style>

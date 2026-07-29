@@ -1,0 +1,457 @@
+@import "tailwindcss";
+
+
+
+@theme {
+  /* ========================================
+     FUENTES
+  /* Font families used across the application
+     ======================================== */
+  --font-limelight: 'Limelight', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Raleway', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* Fuente para títulos y encabezados (con fallback de sistema) */
+  --font-body: 'Raleway', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Fuente para texto general y párrafos (con fallback de sistema) */
+
+  /* ========================================
+     APLICACIÓN GENERAL
+     Main app background and default text colors
+     ======================================== */
+  --color-bg-main: #060606;
+  /* Fondo principal de la aplicación */
+  --color-text-title: #f9cda3;
+  /* Títulos principales */
+  --color-text-subtitle: #fff;
+  /* Subtítulos */
+  --color-text-section: #f08118;
+  /* Títulos de secciones */
+  --color-text-price: #f9cda3;
+  /* Precios por defecto */
+  --color-content-bg: #ffffff;
+  /* Fondo de contenido principal */
+  --color-menu-item-bg: #ffffff10;
+  /* Fondo de items de menú */
+
+  /* ========================================
+     NAVBAR
+     Top navigation bar and section selector
+     ======================================== */
+  --color-navbar-bg: #060606;
+  /* Fondo del navbar */
+  --color-navbar-text: #fff;
+  /* Texto general del navbar */
+  --color-navbar-border: #e5e7eb;
+  /* Bordes del navbar */
+
+  /* Logo del navbar */
+  --color-navbar-logo-bg: #d1d5db;
+  /* Fondo del logo */
+  --color-navbar-logo-text: #4b5563;
+  /* Texto del logo */
+
+  /* Selector de secciones */
+  --color-navbar-select-bg: #ffffff10;
+  /* Fondo del select */
+  --color-navbar-select-border: #f08118;
+  /* Borde del select */
+  --color-navbar-select-text: #f9cda3;
+  /* Texto del select */
+  --color-navbar-select-icon: #f08118;
+  /* Icono del select */
+
+  /* Opciones del dropdown */
+  --color-navbar-select-option-bg: #f9cda3;
+  /* Fondo de opciones */
+  --color-navbar-select-option-text: #1f2937;
+  /* Texto de opciones */
+  --color-navbar-select-option-hover-bg: #f08118;
+  /* Fondo hover */
+  --color-navbar-select-option-hover-text: #ffffff;
+  /* Texto hover */
+
+  /* Border radius del selector */
+  --radius-navbar-select: 0.5rem;
+
+  /* ========================================
+     BEST SELLERS SECTION
+     Horizontal scrolling section for best selling dishes
+     ======================================== */
+  --color-bestsellers-bg: #f08118;
+  /* Fondo de la sección */
+  --color-bestsellers-text-title: #f9cda3;
+  /* Título de la sección */
+
+  /* Cards de platos */
+  --color-bestsellers-card-bg: #ffffff;
+  /* Fondo de las cards */
+  --color-bestsellers-text-name: #333;
+  /* Nombre del plato */
+  --color-bestsellers-text-price: #555;
+  /* Precio del plato */
+
+  /* Scrollbar */
+  --color-bestsellers-scrollbar-thumb: #f9cda3;
+  /* Thumb del scrollbar */
+  --color-bestsellers-scrollbar-track: #9e4f0e70;
+  /* Track del scrollbar */
+
+  /* ========================================
+     SEASONAL SPECIALS SECTION
+     Seasonal or special items section
+     ======================================== */
+  --color-seasonal-bg: #060606;
+  /* Fondo de la sección */
+  --color-seasonal-subtitle: #fff;
+  /* Subtítulo de la sección */
+  --color-seasonal-text-title: #f08118;
+  /* Título de la sección */
+  --color-seasonal-text-subtitle: #fff;
+  /* Texto descriptivo */
+
+  /* Cards de platos */
+  --color-seasonal-card-bg: #f08118;
+  /* Fondo de las cards */
+  --color-seasonal-text-name: #fff;
+  /* Nombre del plato */
+  --color-seasonal-text-price: #fff;
+  /* Precio del plato */
+
+  /* Scrollbar */
+  --color-seasonal-scrollbar-thumb: #f9cda3;
+  /* Thumb del scrollbar */
+  --color-seasonal-scrollbar-track: #9e4f0e70;
+  /* Track del scrollbar */
+
+  /* ========================================
+     EXTRAS SECTION
+     Additional items and add-ons section
+     ======================================== */
+  --color-extras-bg: #f9cda3;
+  /* Fondo de la sección */
+  --color-extras-border: #555;
+  /* Bordes de elementos */
+  --color-extras-text: #333;
+  /* Texto general */
+  --color-extras-price: #333;
+  /* Precios */
+
+  /* ========================================
+     DISH DETAILS MODAL
+     Modal overlay for detailed dish information
+     ======================================== */
+  --color-modal-overlay: #000000cc;
+  /* Overlay oscuro de fondo */
+  --color-modal-bg: #f08118;
+  /* Fondo del modal */
+  --color-modal-gradient-from: #00000050;
+  /* Gradiente sobre imagen */
+
+  /* Botón de cerrar */
+  --color-modal-close-bg: #00000033;
+  /* Fondo del botón */
+  --color-modal-close-hover: #00000066;
+  /* Fondo hover */
+  --color-modal-close-icon: #ffffff;
+  /* Color del icono */
+
+  /* Badge de precio */
+  --color-modal-price-bg: #fff;
+  /* Fondo del precio */
+  --color-modal-price-text: #f08118;
+  /* Texto del precio */
+
+  /* Scrollbar del modal */
+  --color-modal-scrollbar-track: transparent;
+  /* Track transparente */
+  --color-modal-scrollbar-thumb: rgba(0, 0, 0, 0.2);
+  /* Thumb semi-transparente */
+
+  /* ========================================
+     FOOTER
+     Main footer with contact info and social links
+     ======================================== */
+  --color-footer-bg: #f08118;
+  /* Fondo del footer */
+  --color-footer-text: #060606;
+  /* Texto general */
+  --color-footer-accent: #060606;
+  /* Acentos y detalles */
+  --color-footer-btn-bg: #ffffff1a;
+  /* Fondo de botones (default: white/10) */
+  --color-footer-btn-text: #ffffff;
+  /* Texto de botones */
+  --color-footer-btn-hover: #060606;
+  /* Hover de botones (default: accent) */
+
+  /* ========================================
+     SUBFOOTER
+     Copyright and secondary footer information
+     ======================================== */
+  --color-subfooter-bg: #9e4f0e;
+  /* Fondo del subfooter */
+  --color-subfooter-text: #ffffff90;
+  /* Texto semi-transparente */
+
+  /* ========================================
+     UI COMPONENTS
+     Reusable UI elements across the site
+     ======================================== */
+
+  /* Overlay de transición entre secciones */
+  --color-overlay-curtain: #f08118;
+
+  /* Botón \"volver arriba\" */
+  --color-topbutton-bg: #f9cda3;
+  /* Fondo del botón */
+  --color-topbutton-icon: #060606;
+  /* Color del icono */
+
+  /* Botón de WhatsApp flotante */
+  --color-whatsapp-bg: #25D366;
+  /* Fondo del botón (verde WhatsApp) */
+  --color-whatsapp-icon: #ffffff;
+  /* Color del icono */
+
+  /* ========================================
+     ORDERING SYSTEM
+     Shopping cart, order mode button, and product modals
+     ======================================== */
+
+  /* Botón de Modo Pedido (Desktop) */
+  --color-btn-desktop-bg-inactive: transparent;
+  --color-btn-desktop-text-inactive: #f9cda3;
+  /* Old: navbar-select-border */
+  --color-btn-desktop-border-inactive: #f08118;
+  /* Old: navbar-select-border */
+
+  --color-btn-desktop-bg-active: #f08118;
+  --color-btn-desktop-text-active: #ffffff;
+  --color-btn-desktop-border-active: #f08118;
+
+  --color-btn-desktop-bg-hover: #ffffff1a;
+  /* Old: /10 opacity */
+  --color-btn-desktop-text-hover: #f9cda3;
+  --color-btn-desktop-border-hover: #f08118;
+
+  /* Botón de Modo Pedido (Mobile FAB) */
+  --color-btn-mobile-bg-inactive: #f08118;
+  --color-btn-mobile-text-inactive: #ffffff;
+
+  --color-btn-mobile-bg-active: #f08118;
+  --color-btn-mobile-text-active: #ffffff;
+
+  --color-ordering-btn-badge-bg: #ffffff;
+  /* Badge de contador */
+  --color-ordering-btn-badge-text: #f08118;
+  /* Texto del badge */
+
+  /* Barra Móvil de Pedidos */
+  --color-mobile-cart-bar-bg: var(--color-modal-bg);
+  --color-mobile-cart-bar-item-count: var(--color-text-subtitle);
+  --color-mobile-cart-bar-total: var(--color-text-title);
+  --color-mobile-cart-bar-btn-bg: var(--color-navbar-select-border);
+  --color-mobile-cart-bar-btn-text: var(--color-bg-main);
+
+  /* Carrito Sidebar/Sheet */
+  --color-cart-bg: #111111;
+  /* Fondo del carrito */
+  --color-cart-header-bg: #1a1a1a;
+  /* Fondo del header */
+  --color-cart-header-text: #f9cda3;
+  /* Título del header */
+  --color-cart-item-bg: #1f1f1f;
+  /* Fondo de items */
+  --color-cart-item-text: #ffffff;
+  /* Nombre de producto */
+  --color-cart-item-extras: #a0a0a0;
+  /* Texto de extras */
+  --color-cart-item-price: #f9cda3;
+  /* Precio por item */
+  --color-cart-total-bg: #1a1a1a;
+  /* Fondo del total */
+  --color-cart-total-text: #ffffff;
+  /* "Total:" label */
+  --color-cart-total-price: #f08118;
+  /* Cart Empty */
+  --color-cart-empty-text: var(--color-extras-text);
+  --color-cart-empty-btn-bg: var(--color-navbar-select-border);
+  --color-cart-empty-btn-text: var(--color-bg-main);
+  /* Mensaje carrito vacío */
+
+  /* Botón Enviar por WhatsApp */
+  --color-cart-whatsapp-bg: #25D366;
+  /* Fondo del botón */
+  --color-cart-whatsapp-text: #ffffff;
+  /* Texto del botón */
+  --color-cart-whatsapp-icon: #ffffff;
+  /* Icono de WhatsApp */
+
+  /* Controles de Cantidad */
+  --color-quantity-bg: #2a2a2a;
+  /* Fondo del control */
+  --color-quantity-text: #ffffff;
+  /* Número de cantidad */
+  --color-quantity-btn-bg: #f08118;
+  /* Fondo de botones +/- */
+  --color-quantity-btn-text: #ffffff;
+  /* Texto de botones +/- */
+
+  /* Product Cards (en modo pedido) */
+  --color-product-badge-bg: #f08118;
+  /* Badge de cantidad */
+  --color-product-badge-text: #ffffff;
+  /* Texto del badge */
+
+  /* Badge de Nuevo */
+  --color-new-badge-bg: #f08118;
+  /* Fondo del badge "Nuevo" */
+  --color-new-badge-text: #ffffff;
+  /* Texto del badge "Nuevo" */
+  --color-product-add-btn-bg: transparent;
+  /* Fondo botón (+) */
+  --color-product-add-btn-border: #f08118;
+  /* Borde botón (+) */
+  --color-product-add-btn-text: #f08118;
+  /* Texto/icono (+) */
+
+  /* Modal de Producto (extras) */
+  --color-product-modal-bg: var(--color-bg-main);
+  --color-product-modal-text: var(--color-text-title);
+  --color-product-modal-btn-bg: var(--color-navbar-select-border);
+  --color-product-modal-btn-text: var(--color-bg-main);
+  --color-product-extra-bg: var(--color-extras-bg);
+  /* Fondo de extra */
+  --color-product-extra-selected: #f08118;
+  /* Extra seleccionado */
+  --color-product-extra-text: #ffffff;
+  /* Texto del extra */
+
+  /* FAB Móvil (Floating Action Button) */
+  --color-fab-bg: #f08118;
+  /* Fondo del FAB */
+  --color-fab-text: #ffffff;
+  /* Icono del FAB */
+  --color-fab-badge-bg: #ffffff;
+  /* Badge de contador */
+  --color-fab-badge-text: #f08118;
+  /* Texto del badge */
+}
+
+/* ========================================
+   DOCKED LAYOUT (Desktop)
+   Adjust body to make room for fixed sidebar
+   ======================================== */
+@media (min-width: 1024px) {
+  body {
+    transition: padding-right 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  body.desktop-cart-open {
+    padding-right: 20rem;
+    /* w-80 (320px) */
+  }
+
+  /* Adjust grid columns when cart sidebar is open */
+  /* Reduce columns by 1 to compensate for sidebar space */
+  body.desktop-cart-open .grid.lg\:grid-cols-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.desktop-cart-open .grid.lg\:grid-cols-4 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+}
+
+@media (min-width: 1280px) {
+  body.desktop-cart-open {
+    padding-right: 24rem;
+    /* w-96 (384px) */
+  }
+
+  /* On xl screens with cart open, keep reduced columns */
+  body.desktop-cart-open .grid.lg\:grid-cols-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.desktop-cart-open .grid.lg\:grid-cols-4 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+}
+
+/* Best Sellers Scrollbar */
+.scrollbar-bestsellers::-webkit-scrollbar {
+  height: 8px;
+}
+
+.scrollbar-bestsellers::-webkit-scrollbar-track {
+  background: var(--color-bestsellers-scrollbar-track);
+  border-radius: 4px;
+}
+
+.scrollbar-bestsellers::-webkit-scrollbar-thumb {
+  background: var(--color-bestsellers-scrollbar-thumb);
+  border-radius: 4px;
+}
+
+.scrollbar-bestsellers::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--color-bestsellers-scrollbar-thumb), black 10%);
+}
+
+/* Seasonal Specials Scrollbar */
+.scrollbar-seasonal::-webkit-scrollbar {
+  height: 8px;
+}
+
+.scrollbar-seasonal::-webkit-scrollbar-track {
+  background: var(--color-seasonal-scrollbar-track);
+  border-radius: 4px;
+}
+
+.scrollbar-seasonal::-webkit-scrollbar-thumb {
+  background: var(--color-seasonal-scrollbar-thumb);
+  border-radius: 4px;
+
+}
+
+.scrollbar-seasonal::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--color-seasonal-scrollbar-thumb), black 10%);
+}
+
+/* Font configurations */
+body {
+  font-family: var(--font-body);
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-size: 30px;
+  margin: 0;
+  letter-spacing: normal;
+}
+
+h2 {
+  font-family: var(--font-display);
+  font-size: 28px;
+  letter-spacing: normal;
+}
+
+h4 {
+  font-family: var(--font-display);
+  font-size: 24px;
+  letter-spacing: normal;
+}
+
+/* Screen reader only - visually hidden but accessible */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

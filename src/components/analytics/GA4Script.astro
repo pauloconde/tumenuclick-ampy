@@ -1,0 +1,364 @@
+---
+/**
+ * GA4Script.astro
+ *
+ * Componente Astro que inyecta la integración completa con Google Analytics 4 (GA4)
+ * en el `<head>` de la página. Es el punto central de toda la analítica del proyecto.
+ *
+ * Responsabilidades principales:
+ * ───────────────────────────────
+ * 1. Carga el script oficial de gtag.js desde los servidores de Google.
+ * 2. Inicializa GA4 con el ID de medición recibido como prop.
+ * 3. Expone funciones globales reutilizables por otros componentes:
+ *      • window.trackMenuClick    → clics en productos del menú
+ *      • window.trackOrderEvent   → eventos de e-commerce (add_to_cart, begin_checkout, purchase)
+ * 4. Configura un listener global de clics para elementos con `data-track-click`.
+ * 5. Detecta y persiste el contexto de visita ("fuente" del tráfico) en localStorage.
+ * 6. Escucha cambios en el selector de secciones del navbar para registrar navegación.
+ *
+ * Props recibidas:
+ * ────────────────
+ * • ga4Id       → ID de medición de GA4 (e.g. "G-XXXXXXXXXX"). Sin este valor,
+ *                 el componente no renderiza nada (sólo emite un warning en consola).
+ * • restaurantId → ID único del restaurante (formato "PPCCCIIIICCCCC...").
+ *                  Se usa para extraer el `id_cliente` (posiciones 9-14) y adjuntarlo
+ *                  a todos los eventos como dimensión personalizada global.
+ *
+ * Convenciones del ID de restaurante / producto:
+ * ─────────────────────────────────────────────
+ * Los primeros 14 caracteres del slug de cualquier producto siguen este esquema:
+ *   Posición 0-1   → código_pais    (2 chars, e.g. "VE")
+ *   Posición 2-4   → codigo_ciudad  (3 chars, e.g. "CCS")
+ *   Posición 5-8   → id_vendedor    (4 chars)
+ *   Posición 9-13  → id_cliente     (5 chars, se añade prefijo "C" para evitar conversión numérica en GA4)
+ *
+ * Variables de entorno:
+ * ─────────────────────
+ * • import.meta.env.DEV → Si es `true` (modo desarrollo), activa el debug_mode de GA4
+ *   y registra logs adicionales en la consola del navegador.
+ *
+ * Uso:
+ * ────
+ * <GA4Script ga4Id={restaurant.ga4Id} restaurantId={restaurant._id} />
+ * Incluir en el <head> del layout principal (Layout.astro).
+ */
+
+export interface Props {
+    /** ID de medición de GA4. Ejemplo: "G-ABC123XYZ". Si no se provee, no se renderiza nada. */
+    ga4Id?: string;
+    /** ID único del restaurante en Sanity. Se usa para extraer dimensiones geográficas globales. */
+    restaurantId?: string;
+}
+
+const { ga4Id, restaurantId } = Astro.props;
+
+// Validación temprana: si no hay ID de GA4, emitimos advertencia pero no fallamos
+if (!ga4Id) {
+    console.warn('GA4: No measurement ID provided');
+}
+
+// ── Extracción de id_cliente desde el restaurantId ─────────────────────────────
+// El restaurantId tiene el mismo esquema de 14 caracteres que los slugs de productos.
+// Tomamos los caracteres 9-14 para obtener el identificador del cliente/restaurante.
+// Se añade prefijo "C" para que GA4 no trate el valor como número (preserva ceros iniciales).
+let idCliente = '';
+if (restaurantId && restaurantId.length >= 14) {
+    idCliente = 'C' + String(restaurantId.substring(9, 14));
+}
+
+// Flag de entorno: true en `npm run dev`, false en producción
+const isDev = import.meta.env.DEV;
+---
+
+{/* El bloque completo sólo se renderiza si se proporcionó un ga4Id válido */}
+{ga4Id && (
+    <>
+        {/* ── Script de carga de gtag.js (asíncrono para no bloquear el render) ── */}
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${ga4Id}`}></script>
+
+        {/*
+          * ── Script inline de configuración e inicialización ──────────────────────
+          * `is:inline` evita que Astro procese o bundlee el script.
+          * `define:vars` permite pasar variables del frontmatter al scope del script del cliente.
+          */}
+        <script is:inline define:vars={{ ga4Id, idCliente, isDev }}>
+
+            // ── Inicialización del dataLayer y función gtag ─────────────────────
+            // Patrón estándar de Google: dataLayer es la cola de comandos de GA4.
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            window.gtag = gtag; // Expuesto en window para que componentes React puedan usarlo
+
+            // Registra la marca de tiempo de carga del script
+            gtag('js', new Date());
+            
+            // ── Configuración base de GA4 ───────────────────────────────────────
+            // debug_mode=true en desarrollo activa el panel DebugView en GA4
+            gtag('config', ga4Id, {
+                'debug_mode': isDev
+            });
+            
+            // ── Dimensión global: id_cliente ────────────────────────────────────
+            // `gtag('set', ...)` adjunta parámetros a TODOS los eventos futuros,
+            // incluyendo los automáticos (page_view, scroll, click, etc.)
+            if (idCliente) {
+                gtag('set', {
+                    'id_cliente': idCliente
+                });
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // FUNCIÓN: trackMenuClick
+            // ═══════════════════════════════════════════════════════════════════
+            /**
+             * Registra el evento `select_item` en GA4 cuando el usuario hace clic
+             * en un producto del menú. Descompone el slug para extraer dimensiones
+             * geográficas y de negocio que se envían como parámetros personalizados.
+             *
+             * @param {string} slug        - Slug del producto (mínimo 14 chars).
+             *                               Ejemplo: "VECCSA00200001-reina-pepiada"
+             * @param {string} name        - Nombre legible del producto.
+             * @param {string} sectionName - Nombre de la sección del menú (e.g. "Arepas").
+             *                               Si no se provee, se usa 'General'.
+             */
+            window.trackMenuClick = function(slug, name, sectionName) {
+                // ── Validación del slug ─────────────────────────────────────────
+                // El slug es obligatorio y debe tener al menos 14 caracteres
+                // para que podamos extraer las dimensiones del identificador maestro.
+                if (!slug || typeof slug !== 'string') {
+                    if (isDev) console.warn('GA4: Invalid slug provided to trackMenuClick', { slug, name });
+                    return;
+                }
+
+                if (slug.length < 14) {
+                    if (isDev) console.warn('GA4: Slug too short (< 14 chars)', { slug, name });
+                    return;
+                }
+
+                // ── Parseo del ID maestro (primeros 14 caracteres) ──────────────
+                // Fragmentamos el slug para extraer cada dimensión según el esquema:
+                // [PP][CCC][IIII][CCCCC]
+                const masterId = slug.substring(0, 14);
+                const codigo_pais    = String(masterId.substring(0, 2));   // Ej: "VE"
+                const codigo_ciudad  = String(masterId.substring(2, 5));   // Ej: "CCS"
+                const id_vendedor    = String(masterId.substring(5, 9));   // Ej: "A002"
+                const id_cliente     = String(masterId.substring(9, 14));  // Ej: "00001"
+
+                // ── Construcción del payload del evento ─────────────────────────
+                // Se añade prefijo "C" a id_cliente para que GA4 no trate el valor
+                // como número entero y preserve los ceros iniciales.
+                const eventPayload = {
+                    item_id:        String(masterId),
+                    item_name:      name,
+                    item_section:   sectionName || 'General', // Fallback si no viene sección
+                    codigo_pais:    codigo_pais,
+                    codigo_ciudad:  codigo_ciudad,
+                    id_vendedor:    id_vendedor,               // Alfanumérico, no necesita prefijo
+                    id_cliente:     'C' + id_cliente           // Prefijo para preservar ceros
+                };
+
+                // ── Envío del evento a GA4 ──────────────────────────────────────
+                // `select_item` es un evento estándar de GA4 e-commerce.
+                gtag('event', 'select_item', eventPayload);
+            };
+
+            // ═══════════════════════════════════════════════════════════════════
+            // LISTENER GLOBAL: data-track-click
+            // ═══════════════════════════════════════════════════════════════════
+            // Intercepta clics en cualquier elemento del DOM que tenga el atributo
+            // `data-track-click`. Esto permite rastrear interacciones sin necesidad
+            // de agregar lógica de analytics a cada componente individualmente.
+            //
+            // Atributos HTML reconocidos:
+            //   data-track-click      → (obligatorio) nombre del evento GA4 a disparar
+            //   data-destination-url  → URL de destino del clic (fallback: href del elemento)
+            //   data-label            → etiqueta descriptiva del clic (e.g. "Instagram", "WhatsApp")
+            //
+            // Ejemplo de uso en HTML:
+            //   <a href="..." data-track-click="social_click" data-label="Instagram">...</a>
+            document.addEventListener('click', (e) => {
+                // `closest` sube por el árbol DOM buscando el elemento con el atributo
+                // (útil si el clic fue en un ícono hijo, por ejemplo)
+                const target = e.target.closest('[data-track-click]');
+                if (target) {
+                    const eventName      = target.dataset.trackClick;
+                    const destinationUrl = target.dataset.destinationUrl || target.href;
+                    const label          = target.dataset.label;
+                    
+                    // Garantizamos que clickLabel sea siempre un string para GA4
+                    const clickLabel = String(label || 'n/a');
+
+                    gtag('event', eventName, {
+                        destination_url: destinationUrl,
+                        click_label:     clickLabel
+                    });
+                }
+            });
+
+            // ═══════════════════════════════════════════════════════════════════
+            // MÓDULO: Detección y persistencia de contexto de visita
+            // ═══════════════════════════════════════════════════════════════════
+            // Detecta la "fuente" de la visita para adjuntarla a eventos de e-commerce.
+            // Permite saber si el usuario llegó por WhatsApp, Instagram, QR, etc.
+            //
+            // Prioridad de resolución:
+            //   1. Parámetro `?source=` en la URL (más prioritario)
+            //   2. Valor guardado previamente en localStorage (visitas recurrentes)
+            //   3. Fallback a 'direct' si no hay información disponible
+            //
+            // Valor persistido en localStorage['tumenu_visit_context'].
+            const URL_PARAM   = 'source';
+            const STORAGE_KEY = 'tumenu_visit_context';
+
+            /**
+             * Lee el parámetro `?source=` de la URL o recupera el valor guardado
+             * en localStorage. Almacena la fuente para uso en eventos posteriores.
+             */
+            function initVisitContext() {
+                const urlParams   = new URLSearchParams(window.location.search);
+                const sourceParam = urlParams.get(URL_PARAM);    // Ej: "?source=qr"
+                const storedSource = localStorage.getItem(STORAGE_KEY);
+
+                if (isDev) console.log('GA4 [Source Check]', { url: sourceParam, stored: storedSource });
+
+                // Prioridad: 1. URL Param → 2. Local Storage → 3. Fallback 'direct'
+                if (sourceParam) {
+                    // Si viene en la URL, siempre sobrescribimos (campaña activa)
+                    localStorage.setItem(STORAGE_KEY, sourceParam);
+                    if (isDev) console.log('GA4 [Source Set] URL ->', sourceParam);
+                } else if (!storedSource) {
+                    // Solo escribimos 'direct' si no hay nada guardado
+                    localStorage.setItem(STORAGE_KEY, 'direct');
+                    if (isDev) console.log('GA4 [Source Set] Fallback -> direct');
+                } else {
+                    // Mantenemos el valor existente (visita recurrente sin parámetro)
+                    if (isDev) console.log('GA4 [Source Kept] Storage ->', storedSource);
+                }
+            }
+
+            // Ejecutamos inmediatamente al cargar el script
+            initVisitContext();
+
+            /**
+             * Obtiene el contexto de visita almacenado (fuente de tráfico).
+             * @returns {string} La fuente de visita (e.g. 'qr', 'instagram', 'direct')
+             */
+            function getVisitContext() {
+                return localStorage.getItem(STORAGE_KEY) || 'direct';
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // FUNCIÓN: trackOrderEvent (E-commerce GA4)
+            // ═══════════════════════════════════════════════════════════════════
+            /**
+             * Envía eventos estándar de e-commerce de GA4 con dimensiones personalizadas
+             * del negocio (contexto de visita, geografía, cliente).
+             *
+             * Eventos soportados:
+             *   • 'add_to_cart'    → Cuando se agrega un producto al carrito
+             *   • 'begin_checkout' → Cuando el usuario comienza el proceso de pedido
+             *   • 'purchase'       → Cuando se confirma una orden (requiere transactionId)
+             *
+             * @param {string}   eventName     - Nombre del evento GA4 a disparar
+             * @param {Array}    items         - Array de CartItems del store del carrito
+             * @param {number}   value         - Valor total del carrito (requerido para 'purchase')
+             * @param {string}   [transactionId] - ID único de transacción (sólo para 'purchase')
+             */
+             window.trackOrderEvent = function(eventName, items, value, transactionId) {
+                // Guardia: sin ítems no hay evento que enviar
+                if (!items || items.length === 0) return;
+
+                const visitContext = getVisitContext(); // Fuente de tráfico persistida
+                const currency = 'USD'; // Moneda base (puede hacerse dinámica en el futuro)
+
+                // ── Extracción de dimensiones geográficas / de negocio ──────────
+                // Usamos el slug del primer ítem del carrito para extraer las dimensiones
+                // geográficas. Se asume que todos los ítems son del mismo vendedor.
+                // Si hubiera múltiples vendedores, habría que revisar esta lógica.
+                const firstId = items[0].productSlug || '';
+
+                // Variables para dimensiones personalizadas
+                let codigo_pais = '', codigo_ciudad = '', id_vendedor = '', id_cliente = '';
+                
+                if (typeof firstId === 'string' && firstId.length >= 14) {
+                    // Mismo esquema de parseo que en trackMenuClick
+                    const masterId = firstId.substring(0, 14);
+                    codigo_pais   = String(masterId.substring(0, 2));
+                    codigo_ciudad = String(masterId.substring(2, 5));
+                    id_vendedor   = String(masterId.substring(5, 9));
+                    id_cliente    = 'C' + String(masterId.substring(9, 14)); // Prefijo "C" para evitar conversión numérica
+                }
+
+                // ── Transformación de ítems al formato GA4 ─────────────────────
+                // GA4 e-commerce requiere un array `items` con campos específicos.
+                const ga4Items = items.map(item => {
+                    // Usamos sólo los primeros 14 chars del slug como item_id (ID maestro)
+                    const masterId = item.productSlug && item.productSlug.length >= 14
+                        ? item.productSlug.substring(0, 14)
+                        : item.productSlug;
+
+                    // Concatenamos los extras/variantes en un string separado por comas
+                    // Ejemplo: "Sin cebolla, Extra queso"
+                    const variant = item.extras 
+                        ? item.extras.map(e => e.name).join(', ')
+                        : '';
+
+                    return {
+                        item_id:       String(masterId),
+                        item_name:     item.name,
+                        price:         item.unitPrice,              // GA4 requiere número, no string
+                        quantity:      item.quantity,
+                        item_variant:  variant,
+                        item_category: item.sectionName || 'General' // Sección del menú
+                    };
+                });
+
+                // ── Construcción del payload completo del evento ────────────────
+                const payload = {
+                    currency:       currency,
+                    value:          value !== undefined ? value : 0,
+                    items:          ga4Items,
+                    // Dimensiones personalizadas de contexto y negocio
+                    visit_context:  visitContext,  // Fuente de tráfico (qr, instagram, direct, etc.)
+                    codigo_pais:    codigo_pais,
+                    codigo_ciudad:  codigo_ciudad,
+                    id_vendedor:    id_vendedor,
+                    id_cliente:     id_cliente
+                };
+
+                // `transaction_id` sólo es relevante para el evento 'purchase'
+                // GA4 lo requiere para deduplicar transacciones duplicadas
+                if (eventName === 'purchase' && transactionId) {
+                    payload.transaction_id = transactionId;
+                }
+
+                // ── Envío a GA4 y log de depuración ────────────────────────────
+                gtag('event', eventName, payload);
+                if (isDev) console.log(`GA4 [${eventName}]`, payload);
+            };
+
+            // ═══════════════════════════════════════════════════════════════════
+            // LISTENER: Rastreo de navegación por secciones del navbar
+            // ═══════════════════════════════════════════════════════════════════
+            // Cuando el usuario cambia la sección activa en el selector del navbar
+            // (#section-select), registra un evento `navigation_section` en GA4
+            // para entender cómo exploran el menú.
+            //
+            // Se escucha `DOMContentLoaded` para garantizar que el elemento exista
+            // antes de intentar adjuntar el listener.
+            document.addEventListener('DOMContentLoaded', () => {
+                const sectionSelect = document.getElementById('section-select');
+                if (sectionSelect) {
+                    sectionSelect.addEventListener('change', (e) => {
+                        // Obtenemos el texto del option seleccionado (nombre de la sección)
+                        const sectionName = e.target.options[e.target.selectedIndex].text;
+                        gtag('event', 'navigation_section', {
+                            section_name:  sectionName,
+                            visit_context: getVisitContext() // Incluimos contexto de visita también en navegación
+                        });
+                    });
+                }
+            });
+        </script>
+    </>
+)}

@@ -1,0 +1,56 @@
+---
+import DefaultSectionLayout from "../sectionLayouts/DefaultSectionLayout";
+import CarouselSectionLayout from "../sectionLayouts/CarouselSectionLayout";
+
+interface Props {
+    section: any;
+    globalLayoutPreference?: string;
+    currencySymbol: string;
+    priceDivider: string;
+    bestSellersTitleSingular: string;
+    newsTitleSingular?: string;
+}
+
+const {
+    section,
+    globalLayoutPreference,
+    currencySymbol,
+    priceDivider,
+    bestSellersTitleSingular,
+    newsTitleSingular,
+} = Astro.props;
+
+// 2. Determine effective version
+const version = section.version || globalLayoutPreference || "grid";
+
+// 4. Extract Design Config and Custom Styles
+const designConfig = section.designConfig || {};
+
+let customStyles = {};
+try {
+    if (section.customStyles) {
+        customStyles = JSON.parse(section.customStyles);
+    }
+} catch (e) {
+    console.error("Error parsing customStyles for section:", section.title, e);
+}
+
+// 5. Props object to spread
+const componentProps = {
+    section,
+    currencySymbol,
+    priceDivider,
+    bestSellersTitleSingular,
+    newsTitleSingular,
+    ...designConfig,
+    customStyles,
+};
+---
+
+{
+    version === "carousel" ? (
+        <CarouselSectionLayout client:visible {...componentProps} />
+    ) : (
+        <DefaultSectionLayout client:visible {...componentProps} />
+    )
+}

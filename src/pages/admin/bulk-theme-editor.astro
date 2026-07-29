@@ -1,0 +1,46 @@
+---
+/**
+ * Bulk Theme Editor Page
+ *
+ * Protected admin page for bulk color replacement.
+ * Only accessible when THEME_EDITOR_ENABLED=true in .env.local
+ */
+import BulkThemeEditorComponent from "../../components/theme/BulkThemeEditor";
+
+// Check if editor is enabled
+const isEnabled = import.meta.env.THEME_EDITOR_ENABLED === "true";
+
+// Return 404 if not enabled
+if (!isEnabled) {
+    return new Response(null, { status: 404 });
+}
+---
+
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Bulk Color Editor | Admin</title>
+        <meta name="robots" content="noindex, nofollow" />
+
+        <style is:global>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            html,
+            body {
+                height: 100%;
+                overflow: hidden;
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                    Oxygen, Ubuntu, sans-serif;
+            }
+        </style>
+    </head>
+    <body>
+        <BulkThemeEditorComponent client:only="react" />
+    </body>
+</html>

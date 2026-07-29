@@ -1,0 +1,41 @@
+---
+import SeasonalCard from "./cards/SeasonalCard.astro";
+
+interface Props {
+    seasonalSpecials: any;
+    currencySymbol: string;
+    priceDivider: string;
+    newsTitleSingular?: string;
+}
+
+const { seasonalSpecials, currencySymbol, priceDivider, newsTitleSingular } =
+    Astro.props;
+---
+
+<section
+    class="bg-seasonal-bg w-full pt-10 pb-8 px-4 md:px-6 lg:px-8 shadow-md"
+>
+    <div>
+        <h2 class="text-2xl font-bold text-seasonal-text-title">
+            {seasonalSpecials.title}
+        </h2>
+        <p class="text-md font-bold text-seasonal-text-subtitle mb-6">
+            {seasonalSpecials.subtitle}
+        </p>
+    </div>
+    <div
+        class="flex items-stretch overflow-x-auto pb-4 space-x-4 scrollbar-seasonal"
+    >
+        {
+            seasonalSpecials.items.map((item: any) => (
+                <SeasonalCard
+                    item={item}
+                    section={seasonalSpecials.title}
+                    currencySymbol={currencySymbol}
+                    priceDivider={priceDivider}
+                    newsTitleSingular={newsTitleSingular}
+                />
+            ))
+        }
+    </div>
+</section>

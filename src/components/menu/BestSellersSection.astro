@@ -1,0 +1,44 @@
+---
+import BestSellerCard from "./cards/BestsellerCard.astro";
+
+interface Props {
+    menuData: any;
+}
+
+const { menuData } = Astro.props;
+
+if (!menuData) {
+    throw new Error("Failed to fetch menu data from Sanity");
+}
+
+// La lista de bestsellers es ahora una lista curada y ordenada definida directamente en el menú
+const bestSellers = menuData.bestSellersItems || [];
+---
+
+{
+    bestSellers.length > 0 && (
+        <section class="bg-bestsellers-bg w-full pt-10 pb-8 px-4 md:px-6 lg:px-8 shadow-md">
+            <div class="mb-3">
+                <h2
+                    class="font-bold text-bestsellers-text-title"
+                    style="font-family: var(--font-section-title-family, var(--font-belanosima)); font-style: var(--font-section-title-style, normal); font-weight: var(--font-section-title-weight, 700); font-size: var(--font-section-title-size, 1.25rem);"
+                >
+                    {menuData.bestSellersTitlePlural || "Tus favoritos..."}
+                </h2>
+            </div>
+            <div class="flex overflow-x-auto pt-5 pb-4 px-1 space-x-4 scrollbar-bestsellers">
+                {bestSellers.map((item: any) => (
+                    <BestSellerCard
+                        item={item}
+                        currencySymbol={menuData.currencySymbol}
+                        priceDivider={menuData.priceDivider}
+                        bestSellersTitleSingular={
+                            menuData.bestSellersTitleSingular
+                        }
+                        newsTitleSingular={menuData.newsTitleSingular}
+                    />
+                ))}
+            </div>
+        </section>
+    )
+}

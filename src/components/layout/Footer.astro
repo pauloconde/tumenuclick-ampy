@@ -1,0 +1,256 @@
+---
+import { SERVICE_PROVIDER } from "../../config";
+import InstallButton from "../pwa/InstallButton";
+
+interface Props {
+    addresses: any[];
+    socialMedia: any[];
+    socialMediaSectionTitle: string;
+    addressesSectionTitle: string;
+    config: any;
+    brandName: string;
+}
+
+const {
+    addresses,
+    socialMedia,
+    socialMediaSectionTitle,
+    addressesSectionTitle,
+    config,
+    brandName,
+} = Astro.props;
+
+const siteUrl = config?.siteUrl || "";
+const currentYear = new Date().getFullYear();
+
+const iconMap = {
+    Instagram:
+        "M7.8,2H16.2C19.4,2 22,4.6 22,7.8V16.2A5.8,5.8 0 0,1 16.2,22H7.8C4.6,22 2,19.4 2,16.2V7.8A5.8,5.8 0 0,1 7.8,2M7.6,4A3.6,3.6 0 0,0 4,7.6V16.4C4,18.39 5.61,20 7.6,20H16.4A3.6,3.6 0 0,0 20,16.4V7.6C20,5.61 18.39,4 16.4,4H7.6M12,6.8A5.2,5.2 0 0,1 17.2,12A5.2,5.2 0 0,1 12,17.2A5.2,5.2 0 0,1 6.8,12A5.2,5.2 0 0,1 12,6.8M12,8.8A3.2,3.2 0 0,0 8.8,12A3.2,3.2 0 0,0 12,15.2A3.2,3.2 0 0,0 15.2,12A3.2,3.2 0 0,0 12,8.8M17.25,5.5A1.25,1.25 0 0,1 18.5,6.75A1.25,1.25 0 0,1 17.25,8A1.25,1.25 0 0,1 16,6.75A1.25,1.25 0 0,1 17.25,5.5Z",
+    Whatsapp:
+        "M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 15 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M16.53 14.96C16.29 14.84 15.08 14.25 14.85 14.17C14.63 14.09 14.47 14.05 14.3 14.29C14.14 14.53 13.67 15.08 13.53 15.24C13.39 15.4 13.25 15.42 13 15.3C12.76 15.18 11.97 14.92 11.04 14.09C10.3 13.43 9.81 12.62 9.67 12.37C9.53 12.12 9.66 11.99 9.78 11.87C9.89 11.76 10.03 11.58 10.15 11.44C10.27 11.3 10.31 11.19 10.39 11.03C10.47 10.87 10.43 10.73 10.37 10.61C10.31 10.49 9.84 9.33 9.64 8.86C9.45 8.39 9.25 8.46 9.11 8.45C8.97 8.45 8.81 8.45 8.65 8.45C8.49 8.45 8.23 8.51 8 8.76C7.78 9 7.15 9.59 7.15 10.79C7.15 11.99 8.02 13.15 8.15 13.31C8.27 13.47 9.86 15.92 12.29 16.97C12.87 17.22 13.32 17.37 13.68 17.48C14.24 17.66 14.75 17.64 15.15 17.58C15.6 17.51 16.53 17.02 16.72 16.47C16.92 15.93 16.92 15.47 16.86 15.37C16.8 15.27 16.64 15.21 16.4 15.09L16.53 14.96Z",
+    Maps: "M12,2C15.31,2 18,4.66 18,7.95C18,12.41 12,19 12,19C12,19 6,12.41 6,7.95C6,4.66 8.69,2 12,2M12,6A2,2 0 0,0 10,8A2,2 0 0,0 12,10A2,2 0 0,0 14,8A2,2 0 0,0 12,6M20,19C20,21.21 16.42,23 12,23C7.58,23 4,21.21 4,19C4,17.71 5.22,16.56 7.11,15.83L7.75,16.74C6.67,17.19 6,17.81 6,18.5C6,19.88 8.69,21 12,21C15.31,21 18,19.88 18,18.5C18,17.81 17.33,17.19 16.25,16.74L16.89,15.83C18.78,16.56 20,17.71 20,19Z",
+    Facebook:
+        "M12 2.04C6.5 2.04 2 6.53 2 12.06C2 17.06 5.66 21.21 10.44 21.96V14.96H7.9V12.06H10.44V9.85C10.44 7.34 11.93 5.96 14.22 5.96C15.31 5.96 16.45 6.15 16.45 6.15V8.62H15.19C13.95 8.62 13.56 9.39 13.56 10.18V12.06H16.34L15.89 14.96H13.56V21.96A10 10 0 0 0 22 12.06C22 6.53 17.5 2.04 12 2.04Z",
+    X: "M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z",
+    Youtube:
+        "M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z",
+    TikTok: "M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z",
+    Share: "M18,16.08C17.24,16.08 16.56,16.38 16.04,16.85L8.91,12.7C8.96,12.47 9,12.24 9,12C9,11.76 8.96,11.53 8.91,11.3L15.96,7.19C16.5,7.69 17.21,8 18,8A3,3 0 0,0 21,5A3,3 0 0,0 18,2A3,3 0 0,0 15,5C15,5.24 15.04,5.47 15.09,5.7L8.04,9.81C7.5,9.31 6.79,9 6,9A3,3 0 0,0 3,12A3,3 0 0,0 6,15C6.79,15 7.5,14.69 8.04,14.19L15.16,18.34C15.11,18.55 15.08,18.77 15.08,19C15.08,20.61 16.39,21.91 18,21.91C19.61,21.91 20.92,20.61 20.92,19A2.92,2.92 0 0,0 18,16.08Z",
+};
+---
+
+<footer class="bg-footer-bg text-footer-text">
+    <div class="container mx-auto px-4 py-8">
+        <div
+            class="flex flex-col md:flex-row justify-between items-center gap-6"
+        >
+            <!-- Direcciones -->
+            {
+                addresses && addresses.length > 0 && (
+                    <div class="flex flex-col gap-3 w-full md:w-1/2 items-end md:items-start">
+                        <h4 class="text-xl font-bold text-footer-accent text-right md:text-left w-full">
+                            {addressesSectionTitle}
+                        </h4>
+                        <div class="grid gap-5 w-full">
+                            {addresses.map((addr: any) => (
+                                <div class="flex flex-col gap-1 items-end md:items-start text-right md:text-left">
+                                    <h4 class="font-bold text-lg">
+                                        {addr.showTitle ? addr.name : ""}
+                                    </h4>
+                                    <p class="text-md opacity-90 max-w-[280px] sm:max-w-[350px] md:max-w-md">
+                                        {addr.address}
+                                    </p>
+                                    {addr.schedule && (
+                                        <p class="text-sm opacity-75 italic">
+                                            {addr.schedule}
+                                        </p>
+                                    )}
+                                    {addr.mapUrl && (
+                                        <a
+                                            href={addr.mapUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            class="flex items-center gap-3 text-sm bg-[var(--color-footer-btn-bg)] hover:bg-[var(--color-footer-btn-hover)] text-[var(--color-footer-btn-text)] px-4 py-1 mt-1 rounded-full transition-colors duration-300 w-fit"
+                                            aria-label={`Ver ubicación de ${addr.name} en el mapa`}
+                                            data-track-click="click_location"
+                                            data-destination-url={addr.mapUrl}
+                                            data-label={`Maps: ${addr.name}`}
+                                        >
+                                            <svg
+                                                class="w-4 h-4 fill-current "
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path d={iconMap.Maps} />
+                                            </svg>
+                                            <span>Cómo llegar</span>
+                                        </a>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* Redes Sociales */}
+            {
+                socialMedia && socialMedia.length > 0 && (
+                    <div class="flex flex-col gap-4 w-full md:w-1/2 items-end">
+                        <h4 class="text-xl font-bold text-footer-accent text-right w-full">
+                            {socialMediaSectionTitle}
+                        </h4>
+                        <div class="flex gap-4">
+                            {socialMedia.map((social: any) => {
+                                // Buscar el ícono de forma case-insensitive
+                                const iconPath = Object.entries(iconMap).find(
+                                    ([key]) =>
+                                        key.toLowerCase() ===
+                                        social.name.toLowerCase(),
+                                )?.[1];
+
+                                if (!iconPath) {
+                                    if (import.meta.env.DEV) {
+                                        console.warn(
+                                            `No icon found for social media: ${social.name}`,
+                                        );
+                                    }
+                                    return null;
+                                }
+
+                                return (
+                                    <a
+                                        href={social.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="bg-[var(--color-footer-btn-bg)] p-3 rounded-full hover:bg-[var(--color-footer-btn-hover)] transition-colors duration-300 group"
+                                        aria-label={`Visitar ${social.name}`}
+                                        data-track-click="click_social"
+                                        data-destination-url={social.url}
+                                        data-label={social.name}
+                                    >
+                                        <svg
+                                            class="w-6 h-6 fill-[var(--color-footer-btn-text)] group-hover:text-[var(--color-footer-btn-text)]"
+                                            viewBox="0 0 24 24"
+                                            style="fill: var(--color-footer-btn-text);"
+                                        >
+                                            <path d={iconPath} />
+                                        </svg>
+                                    </a>
+                                );
+                            })}
+
+                            {/* Share Button */}
+                            {siteUrl && (
+                                <button
+                                    id="share-button"
+                                    class="bg-[var(--color-footer-btn-bg)] p-3 rounded-full hover:bg-[var(--color-footer-btn-hover)] transition-colors duration-300 group"
+                                    aria-label="Compartir sitio"
+                                    data-share-url={siteUrl}
+                                    data-share-title={brandName}
+                                >
+                                    <svg
+                                        class="w-6 h-6 fill-[var(--color-footer-btn-text)] group-hover:text-[var(--color-footer-btn-text)]"
+                                        viewBox="0 0 24 24"
+                                        style="fill: var(--color-footer-btn-text);"
+                                    >
+                                        <path d={iconMap.Share} />
+                                    </svg>
+                                </button>
+                            )}
+                        </div>
+                        {/* PWA Install Button */}
+                        <InstallButton client:idle />
+                    </div>
+                )
+            }
+        </div>
+    </div>
+
+    <!-- Subfooter -->
+    <div
+        class="bg-subfooter-bg brightness-80 text-subfooter-text py-4 text-sm text-center"
+    >
+        <div
+            class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-2"
+        >
+            <p>
+                &copy; {currentYear}
+                <a
+                    href={SERVICE_PROVIDER.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-footer-accent hover:underline font-bold"
+                    >{SERVICE_PROVIDER.name}.</a
+                >
+                {SERVICE_PROVIDER.footerPrefix}
+                {SERVICE_PROVIDER.developer}.
+            </p>
+            <p></p>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // Web Share API handler
+    const shareButton = document.getElementById("share-button");
+
+    if (shareButton) {
+        shareButton.addEventListener("click", async () => {
+            const shareUrl = shareButton.dataset.shareUrl;
+            const shareTitle = shareButton.dataset.shareTitle;
+
+            if (!shareUrl) {
+                return;
+            }
+
+            // Check if Web Share API is supported
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: shareTitle || "Menú",
+                        url: shareUrl,
+                    });
+                } catch (err) {
+                    // User cancelled share or there was an error
+                    if (err instanceof Error && err.name !== "AbortError") {
+                        // Fallback to clipboard
+                        copyToClipboard(shareUrl);
+                    }
+                }
+            } else {
+                // Fallback: Copy to clipboard
+                copyToClipboard(shareUrl);
+            }
+        });
+    }
+
+    function copyToClipboard(text: string) {
+        if (navigator.clipboard) {
+            navigator.clipboard
+                .writeText(text)
+                .then(() => {
+                    alert("URL copiada al portapapeles");
+                })
+                .catch((err) => {
+                    console.error("Error copying to clipboard:", err);
+                    alert("No se pudo copiar la URL");
+                });
+        } else {
+            // Older fallback method
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand("copy");
+                alert("URL copiada al portapapeles");
+            } catch (err) {
+                console.error("Error copying to clipboard:", err);
+                alert("No se pudo copiar la URL");
+            }
+            document.body.removeChild(textArea);
+        }
+    }
+</script>

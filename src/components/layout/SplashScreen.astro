@@ -1,0 +1,153 @@
+---
+const { logoUrl } = Astro.props;
+
+// Fallback a logo estático si no hay logoUrl de Sanity
+const logoSrc = logoUrl;
+---
+
+<section id="overlay">
+    <div class="top"></div>
+    <div id="overlay-logo">
+        <img src={logoSrc} alt="Logo" fetchpriority="high" decoding="async" />
+    </div>
+    <div class="bottom"></div>
+</section>
+
+<style>
+    :root {
+        --curtain-duration: 0.7s; /* Duración de la animación de las cortinas */
+    }
+
+    /* Estilos para el overlay inicial - OPTIMIZADO PARA FCP */
+    #overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        overflow: hidden;
+        /* Performance optimizations - permite que el contenido detrás se pinte primero */
+        contain: strict; /* Aisla el splash del resto del layout */
+        will-change: contents; /* Indica al navegador que va a cambiar */
+        content-visibility: auto; /* Permite diferir el render si está fuera de viewport */
+    }
+
+    #overlay-logo {
+        position: absolute; /* Aseguramos que esté encima de las cortinas */
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%); /* Centramos el logo */
+        z-index: 10; /* Logo por encima de las cortinas */
+    }
+
+    #overlay-logo img {
+        width: 100%;
+        height: 100%;
+        max-width: min(500px, 80vw);
+        max-height: 60vh;
+        object-fit: contain;
+        opacity: 1;
+        transform: scale(1) translateZ(0); /* translateZ fuerza GPU layer */
+        transition:
+            transform 1s cubic-bezier(0.68, -0.55, 0.27, 1.55),
+            opacity 1s ease-out;
+        filter: drop-shadow(0px 0px 10px rgba(0, 0, 0, 0.5));
+        will-change: transform, opacity; /* Optimiza para animación */
+    }
+
+    /* Estilos para las cortinas - con GPU acceleration */
+    .top,
+    .bottom {
+        position: absolute;
+        width: 100%;
+        height: 50%;
+        background-color: var(--color-overlay-curtain);
+        z-index: 5;
+        will-change: transform; /* Optimiza animación */
+        transform: translateZ(0); /* Fuerza compositing layer */
+    }
+
+    .top {
+        top: 0;
+    }
+
+    .bottom {
+        bottom: 0;
+    }
+
+    /* Para animar la división del overlay */
+    #overlay.split .top {
+        animation: slideUp var(--curtain-duration) ease-in-out forwards; /* Usamos la variable para la duración */
+    }
+
+    #overlay.split .bottom {
+        animation: slideDown var(--curtain-duration) ease-in-out forwards; /* Usamos la variable para la duración */
+    }
+
+    /* Animación para deslizar hacia arriba */
+    @keyframes slideUp {
+        0% {
+            transform: translateY(0);
+        }
+        100% {
+            transform: translateY(-100%);
+        }
+    }
+
+    /* Animación para deslizar hacia abajo */
+    @keyframes slideDown {
+        0% {
+            transform: translateY(0);
+        }
+        100% {
+            transform: translateY(100%);
+        }
+    }
+
+    /* Estilos para el contenido */
+    #content {
+        opacity: 0;
+        background-color: var(
+            --color-overlay-curtain
+        ); /* Comenzamos con el fondo rojo */
+        transition:
+            background-color 1s ease-in-out,
+            opacity 1s ease-in-out; /* Transición del fondo y la opacidad con easing suave */
+    }
+
+    #overlay.split + #content {
+        opacity: 1;
+        background-color: var(--color-content-bg);
+    }
+</style>
+
+<script>
+    // Variables de tiempos de espera definidas aquí
+    const overlayWaitTime = 1500; // Tiempo para que las cortinas comiencen a abrirse
+    const logoShrinkDelay = 1000; // Tiempo de retraso para reducir el tamaño del logo después de que las cortinas se abren
+    const overlayRemoveDelay = 2000; // Tiempo para eliminar el overlay completamente después de la animación
+
+    // Esperamos "overlayWaitTime" antes de ejecutar la animación de las cortinas
+    setTimeout(() => {
+        const overlay = document.getElementById("overlay");
+        const logoWrapper = document.getElementById("overlay-logo");
+        const logo = logoWrapper?.querySelector("img");
+
+        if (!overlay || !logo) return;
+
+        // Iniciamos la animación de apertura de las cortinas
+        overlay.classList.add("split");
+
+        // Después de "logoShrinkDelay", reducimos el tamaño del logo
+        setTimeout(() => {
+            logo.style.transform = "scale(0)"; // Reducimos el tamaño a 0
+            logo.style.opacity = "0"; // Reducimos la opacidad a 0
+        }, logoShrinkDelay); // Esperamos a que las cortinas se abran completamente
+
+        // Después de "overlayRemoveDelay", eliminamos el overlay
+        setTimeout(() => {
+            overlay.style.display = "none";
+        }, overlayRemoveDelay);
+    }, overlayWaitTime); // Esperamos antes de iniciar la apertura de las cortinas
+</script>

@@ -1,0 +1,192 @@
+---
+import Layout from "../layouts/Layout.astro";
+import SectionFactory from "../components/menu/factories/SectionFactory.astro";
+import ProductBuilderSectionOrder from "../components/menu/ProductBuilderSectionOrder";
+import BestSellersSectionOrder from "../components/menu/BestSellersSectionOrder";
+import HeroSectionOrder from "../components/menu/HeroSectionOrder";
+import SeasonalSection from "../components/menu/SeasonalSection.astro";
+import SplashScreen from "../components/layout/SplashScreen.astro";
+import MenuController from "../components/menu/MenuController";
+import { getMenuData } from "../lib/queries";
+import { createImageUrlBuilder } from "@sanity/image-url";
+import { sanityClient } from "../lib/sanity";
+import { getImageUrl } from "../lib/imageUrl";
+
+// Obtener datos de Sanity
+const menuData = await getMenuData();
+
+if (!menuData) {
+  return new Response(
+    `<!DOCTYPE html>
+    <html lang="es">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Error - TuMenú.click</title>
+        <style>
+          body {
+            background-color: #0a0a0a;
+            color: #d8d7d7;
+            font-family:
+              system-ui,
+              -apple-system,
+              sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+            padding: 20px;
+          }
+          img {
+            width: 150px;
+            margin-bottom: 2rem;
+          }
+          h1 {
+            color: #ffc000;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+          }
+          p {
+            margin-bottom: 0.5rem;
+            line-height: 1.5;
+          }
+          .highlight {
+            color: #ffc000;
+            font-weight: bold;
+          }
+        </style>
+      </head>
+      <body>
+        <img
+          src="https://www.tumenu.click/logo.svg"
+          alt="Logo tuMenú.click"
+        />
+        <h1>Problema Técnico</h1>
+        <p>Hay un problema técnico o de configuración.</p>
+        <p>
+          Por favor, comunícate con el servicio de
+          <span class="highlight">Atención al Cliente</span> de tuMenú.click.
+        </p>
+      </body>
+    </html>`,
+    {
+      status: 503,
+      headers: {
+        "Content-Type": "text/html",
+      },
+    },
+  );
+}
+
+// Extraer las secciones necesarias
+const {
+  sections,
+  brand,
+  currencySymbol,
+  priceDivider,
+  bestSellersTitleSingular,
+  newsTitleSingular,
+  seasonalSpecials,
+} = menuData;
+const title = brand?.name;
+
+// Pre-calculate image URLs for each section item
+const sectionsWithImages = sections.map((section: any) => ({
+  ...section,
+  items: section.items?.map((item: any) => ({
+    ...item,
+    imageUrl: getImageUrl(item.imgSrc, 400),
+  })),
+}));
+
+// Determine which seasonal component to show
+const seasonalItemsCount = seasonalSpecials?.items?.length || 0;
+
+// Construir URL del logo overlay desde Sanity
+const builder = createImageUrlBuilder(sanityClient);
+const logoOverlayUrl = brand?.logoOverlay
+  ? builder.image(brand.logoOverlay).url()
+  : null;
+---
+
+<Layout
+  title={title}
+  description={brand?.description}
+  keywords={brand?.keywords}
+  menuData={menuData}
+>
+  <BestSellersSectionOrder client:load menuData={menuData} />
+  {
+    /* Show HeroSpecial only if there's exactly 1 seasonal item, otherwise show SeasonalSpecials scrollable section */
+  }
+  {
+    seasonalItemsCount === 1 ? (
+      <HeroSectionOrder
+        client:load
+        seasonalSpecials={seasonalSpecials}
+        currencySymbol={currencySymbol}
+        priceDivider={priceDivider}
+      />
+    ) : seasonalItemsCount > 1 ? (
+      <SeasonalSection
+        seasonalSpecials={seasonalSpecials}
+        currencySymbol={currencySymbol}
+        priceDivider={priceDivider}
+        newsTitleSingular={newsTitleSingular}
+      />
+    ) : null
+  }
+
+  <main class="md:pt-10 pb-8 px-4 space-y-10">
+    {
+      menuData.showCategoriesPage ? (
+        <MenuController
+          client:load
+          sections={sectionsWithImages}
+          showCategoriesPage={true}
+          defaultSectionLayout={menuData.defaultSectionLayout}
+          currencySymbol={currencySymbol}
+          priceDivider={priceDivider}
+          bestSellersTitleSingular={bestSellersTitleSingular}
+          newsTitleSingular={newsTitleSingular}
+          categoriesLayout={menuData.categoriesLayout}
+          categoriesLayoutConfig={menuData.categoriesLayoutConfig}
+        />
+      ) : (
+        sectionsWithImages
+          .filter(
+            (s: any) => s._type === "category" || s._type === "productBuilder",
+          )
+          .map((section: any) =>
+            section._type === "productBuilder" ? (
+              <ProductBuilderSectionOrder
+                client:load
+                title={section.title}
+                description={section.description}
+                basePrice={section.basePrice || 0}
+                slug={{ current: section.slug }}
+                steps={section.steps || []}
+                currencySymbol={currencySymbol}
+              />
+            ) : (
+              <SectionFactory
+                section={section}
+                globalLayoutPreference={menuData.defaultSectionLayout}
+                currencySymbol={currencySymbol}
+                priceDivider={priceDivider}
+                bestSellersTitleSingular={bestSellersTitleSingular}
+                newsTitleSingular={newsTitleSingular}
+              />
+            ),
+          )
+      )
+    }
+  </main>
+  {
+    /* SplashScreen AL FINAL - position:fixed lo pone encima visualmente pero todo el contenido ya se renderizó */
+  }
+  <SplashScreen logoUrl={logoOverlayUrl} />
+</Layout>
