@@ -95,7 +95,9 @@ if (typography) {
       .toLowerCase();
 
     const family =
-      config.origin === "custom" ? config.customFamily : config.family;
+      config.customFileUrl
+        ? (config.customFamily || config.family || "CustomFont")
+        : (config.origin === "custom" ? config.customFamily : config.family);
 
     if (family) {
       typographyCSS += `--font-${cssPrefix}-family: '${family}', sans-serif;\n`;

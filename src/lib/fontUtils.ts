@@ -24,6 +24,31 @@ const FONTSHARE_FONTS = [
 export function getFontDefinition(config: FontConfig) {
     if (!config) return null;
 
+    // Si tiene un archivo subido a Sanity (Custom Font File)
+    if (config.customFileUrl) {
+        const familyName = config.customFamily || config.family || 'CustomFont';
+        let formatSnippet = '';
+        const urlLower = config.customFileUrl.toLowerCase();
+        if (urlLower.includes('.woff2')) formatSnippet = " format('woff2')";
+        else if (urlLower.includes('.woff')) formatSnippet = " format('woff')";
+        else if (urlLower.includes('.ttf')) formatSnippet = " format('truetype')";
+        else if (urlLower.includes('.otf')) formatSnippet = " format('opentype')";
+
+        const fontFace = `
+      @font-face {
+        font-family: '${familyName}';
+        src: url('${config.customFileUrl}')${formatSnippet};
+        font-weight: ${config.weight || '400'};
+        font-style: ${config.style || 'normal'};
+        font-display: swap;
+      }
+    `;
+        return {
+            tag: 'style',
+            content: fontFace
+        };
+    }
+
     if (config.origin === 'google' && config.family) {
         const cleanFamily = config.family.trim();
         const lowerFamily = cleanFamily.toLowerCase();
@@ -54,29 +79,6 @@ export function getFontDefinition(config: FontConfig) {
                 rel: 'stylesheet',
                 href: href
             }
-        };
-    }
-
-    if (config.origin === 'custom' && config.customFamily && config.customFileUrl) {
-        let formatSnippet = '';
-        const urlLower = config.customFileUrl.toLowerCase();
-        if (urlLower.includes('.woff2')) formatSnippet = " format('woff2')";
-        else if (urlLower.includes('.woff')) formatSnippet = " format('woff')";
-        else if (urlLower.includes('.ttf')) formatSnippet = " format('truetype')";
-        else if (urlLower.includes('.otf')) formatSnippet = " format('opentype')";
-
-        const fontFace = `
-      @font-face {
-        font-family: '${config.customFamily}';
-        src: url('${config.customFileUrl}')${formatSnippet};
-        font-weight: ${config.weight || '400'};
-        font-style: ${config.style || 'normal'};
-        font-display: swap;
-      }
-    `;
-        return {
-            tag: 'style',
-            content: fontFace
         };
     }
 
