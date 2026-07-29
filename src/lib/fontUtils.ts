@@ -24,7 +24,25 @@ const FONTSHARE_FONTS = [
 export function getFontDefinition(config: FontConfig) {
     if (!config) return null;
 
-    // Si tiene un archivo subido a Sanity (Custom Font File)
+    // Si la fuente es Panchang o tiene un archivo subido a Sanity (Custom Font File)
+    const familyLower = (config.customFamily || config.family || '').toLowerCase().trim();
+
+    if (familyLower === 'panchang') {
+        const fontFace = `
+      @font-face {
+        font-family: 'Panchang';
+        src: url('/fonts/Panchang.woff2') format('woff2');
+        font-weight: 100 900;
+        font-style: normal;
+        font-display: swap;
+      }
+    `;
+        return {
+            tag: 'style',
+            content: fontFace
+        };
+    }
+
     if (config.customFileUrl) {
         const familyName = config.customFamily || config.family || 'CustomFont';
         let formatSnippet = '';
