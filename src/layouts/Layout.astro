@@ -35,7 +35,7 @@ const enableOrdering = menuData?.config?.enableOrdering !== false; // Default to
 
 // SEO Configuration
 const author = SERVICE_PROVIDER.name;
-const ogImage = `${siteUrl}/favicon.svg`;
+const ogImage = `${siteUrl.replace(/\/$/, "")}/web-app-manifest-512x512.png`;
 
 // Hybrid Theme System
 const useLocalCSS = import.meta.env.USE_LOCAL_CSS === "true";
@@ -160,6 +160,7 @@ if (typography) {
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={ogImage} />
+    <meta property="og:image:secure_url" content={ogImage} />
     <meta property="og:image:width" content="512" />
     <meta property="og:image:height" content="512" />
     <meta property="og:locale" content="es_ES" />
