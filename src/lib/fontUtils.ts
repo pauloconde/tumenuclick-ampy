@@ -10,6 +10,13 @@ export interface FontConfig {
     lineHeight?: number;
 }
 
+const FONTSHARE_FONTS = [
+    'panchang', 'clash display', 'satoshi', 'general sans', 'cabinet grotesk',
+    'switzer', 'zodiak', 'ranade', 'chillax', 'sentient', 'telma', 'stardom',
+    'gambetta', 'erode', 'alpino', 'synonym', 'boska', 'author', 'purna',
+    'technor', 'bonny', 'plodi', 'syne'
+];
+
 /**
  * Genera el tag <link> o <style> necesario para cargar la fuente.
  * Retorna un objeto con { tag: 'link' | 'style', content: string, attributes?: any }
@@ -18,20 +25,28 @@ export function getFontDefinition(config: FontConfig) {
     if (!config) return null;
 
     if (config.origin === 'google' && config.family) {
-        const familyName = config.family.replace(/\s+/g, '+');
-        // Google Fonts Format: Family:ital,wght@0,400;1,400
-        // Simple implementation: assume weight is needed.
-        // Enhanced: check style to build the correct string.
+        const cleanFamily = config.family.trim();
+        const lowerFamily = cleanFamily.toLowerCase();
 
-        // Example: Open+Sans:ital,wght@0,400  or  Open+Sans:wght@700
-        let weightParam = config.weight || '400';
+        // Si es una fuente conocida de Fontshare (ej: Panchang, Satoshi, Clash Display)
+        if (FONTSHARE_FONTS.includes(lowerFamily)) {
+            const slug = lowerFamily.replace(/\s+/g, '-');
+            const href = `https://api.fontshare.com/v2/css?f[]=${slug}@400,500,600,700,800&display=swap`;
+            return {
+                tag: 'link',
+                attributes: {
+                    rel: 'stylesheet',
+                    href: href
+                }
+            };
+        }
 
-        // If we want to be very precise with Google Fonts URL construction:
-        // This is a basic construction. For complex multi-weight apps, we might need a more robust builder.
-        // But per-field configuration usually implies fetching just what's needed for THAT field.
-
-        // Construct href
-        const href = `https://fonts.googleapis.com/css2?family=${familyName}:ital,wght@${config.style === 'italic' ? '1' : '0'},${weightParam}&display=swap`;
+        // Google Fonts
+        const familyName = cleanFamily.replace(/\s+/g, '+');
+        const weightParam = config.weight || '400';
+        const href = config.style === 'italic'
+            ? `https://fonts.googleapis.com/css2?family=${familyName}:ital,wght@1,${weightParam}&display=swap`
+            : `https://fonts.googleapis.com/css2?family=${familyName}:wght@${weightParam}&display=swap`;
 
         return {
             tag: 'link',
@@ -43,10 +58,17 @@ export function getFontDefinition(config: FontConfig) {
     }
 
     if (config.origin === 'custom' && config.customFamily && config.customFileUrl) {
+        let formatSnippet = '';
+        const urlLower = config.customFileUrl.toLowerCase();
+        if (urlLower.includes('.woff2')) formatSnippet = " format('woff2')";
+        else if (urlLower.includes('.woff')) formatSnippet = " format('woff')";
+        else if (urlLower.includes('.ttf')) formatSnippet = " format('truetype')";
+        else if (urlLower.includes('.otf')) formatSnippet = " format('opentype')";
+
         const fontFace = `
       @font-face {
         font-family: '${config.customFamily}';
-        src: url('${config.customFileUrl}') format('woff2'); /* Asumiendo woff2/woff por recomendación, pero browser detectará */
+        src: url('${config.customFileUrl}')${formatSnippet};
         font-weight: ${config.weight || '400'};
         font-style: ${config.style || 'normal'};
         font-display: swap;

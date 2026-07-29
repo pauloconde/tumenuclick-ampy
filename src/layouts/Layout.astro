@@ -189,7 +189,6 @@ if (typography) {
           <link
             rel="stylesheet"
             href={def.attributes.href}
-            crossorigin="anonymous"
           />
         ) : (
           <style set:html={def.content} />
@@ -223,9 +222,9 @@ if (typography) {
     <GA4Script ga4Id={ga4Id} restaurantId={menuData?.config?.restaurantId} />
 
     {
-      (!useLocalCSS && dynamicThemeStyles) || typographyCSS ? (
+      (dynamicThemeStyles || typographyCSS) ? (
         <style
-          set:html={`:root {\n    ${dynamicThemeStyles}\n    ${typographyCSS}\n  }`}
+          set:html={`:root {\n    ${dynamicThemeStyles || ''}\n    ${typographyCSS || ''}\n  }`}
         />
       ) : null
     }
