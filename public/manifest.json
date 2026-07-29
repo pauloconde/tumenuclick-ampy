@@ -1,7 +1,7 @@
 {
-    "name": "Tortas de Laura",
-    "short_name": "Tortas de Laura",
-    "description": "Menú digital de Tortas de Laura",
+    "name": "Ampy",
+    "short_name": "Ampy",
+    "description": "Menú digital de Ampy",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#ffffff",

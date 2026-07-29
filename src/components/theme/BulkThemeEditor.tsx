@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import ColorInput from './ColorInput'; // Reusing the existing component for the picker interaction
-import { THEME_CHANNEL_NAME, MESSAGE_TYPES, type ThemeMessage } from '../../utils/themeEditorConfig';
+import { THEME_CHANNEL_NAME, MESSAGE_TYPES, getSanityToCSSMap, THEME_STORAGE_KEY, type ThemeMessage } from '../../utils/themeEditorConfig';
 
 interface BulkThemeEditorProps {
     // No props needed as it fetches its own data
@@ -56,10 +56,13 @@ export default function BulkThemeEditor() {
                 if (typeof value === 'string') {
                     // Simple heuristic: starts with # and length 4, 5, 7, or 9
                     if (value.startsWith('#') && (value.length === 4 || value.length === 5 || value.length === 7 || value.length === 9)) {
-                        // STRICT CASE-INSENSITIVE GROUPING
-                        const key = value.toUpperCase();
-                        if (!colorMap[key]) colorMap[key] = [];
-                        colorMap[key].push(currentPath);
+                        // STRICT CASE-INSENSITIVE GROUPING WITH SHORT HEX EXPANSION
+                        let hexKey = value.toUpperCase();
+                        if (/^#[0-9A-F]{3}$/.test(hexKey)) {
+                            hexKey = `#${hexKey[1]}${hexKey[1]}${hexKey[2]}${hexKey[2]}${hexKey[3]}${hexKey[3]}`;
+                        }
+                        if (!colorMap[hexKey]) colorMap[hexKey] = [];
+                        colorMap[hexKey].push(currentPath);
                     }
                 } else if (typeof value === 'object' && value !== null) {
                     traverse(value, currentPath);
@@ -112,6 +115,31 @@ export default function BulkThemeEditor() {
             if (!res.ok) throw new Error(await res.text());
 
             const result = await res.json();
+
+            // Clear preview cache so browser loads fresh values
+            try {
+                sessionStorage.removeItem(THEME_STORAGE_KEY);
+            } catch (e) {}
+
+            // Broadcast live updates to open tabs via BroadcastChannel
+            try {
+                const channel = new BroadcastChannel(THEME_CHANNEL_NAME);
+                const sanityToCss = getSanityToCSSMap();
+
+                for (const path of selectedColor.paths) {
+                    const cssVar = sanityToCss[path];
+                    if (cssVar) {
+                        channel.postMessage({
+                            type: MESSAGE_TYPES.UPDATE_COLOR,
+                            payload: { variable: cssVar, value: replacementColor }
+                        } as ThemeMessage);
+                    }
+                }
+                channel.close();
+            } catch (e) {
+                console.warn('BroadcastChannel error:', e);
+            }
+
             setSuccessMessage(`¡Éxito! Reemplazados ${result.count} campos.`);
 
             // Refresh data

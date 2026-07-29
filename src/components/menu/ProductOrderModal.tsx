@@ -89,6 +89,7 @@ interface ProductModalProps {
     currency: string;
     bestSellerLabel?: string;
     newLabel?: string;
+    showNotes?: boolean;
 }
 
 export function processGroupExtras(
@@ -129,7 +130,8 @@ export default function ProductOrderModal({
     product,
     currency,
     bestSellerLabel = 'Favorito',
-    newLabel = 'Nuevo'
+    newLabel = 'Nuevo',
+    showNotes = true
 }: ProductModalProps) {
     // State for product-specific selected extras (Grouped by Group ID)
     // Legacy product.extras mapped to 'main' group
@@ -1246,23 +1248,25 @@ export default function ProductOrderModal({
                                  }
 
                                  {/* Observations/Notes Section */}
-                                 <div className="p-4 sm:p-5 border-t border-white/5 space-y-2">
-                                     <label 
-                                         htmlFor="product-notes" 
-                                         className="block text-md font-semibold text-white"
-                                         
-                                     >
-                                         Observaciones:
-                                     </label>
-                                     <textarea
-                                         id="product-notes"
-                                         rows={2}
-                                         placeholder="Ej: sin cebolla, salsas aparte, etc."
-                                         value={notes}
-                                         onChange={(e) => setNotes(e.target.value)}
-                                         className="w-full p-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm placeholder-white/30 focus:outline-none focus:border-[var(--color-product-extra-selected)] transition-colors resize-none"
-                                     />
-                                 </div>
+                                 {showNotes && (
+                                     <div className="p-4 sm:p-5 border-t border-white/5 space-y-2">
+                                         <label 
+                                             htmlFor="product-notes" 
+                                             className="block text-md font-semibold text-white"
+                                             
+                                         >
+                                             Observaciones:
+                                         </label>
+                                         <textarea
+                                             id="product-notes"
+                                             rows={2}
+                                             placeholder="Ej: sin cebolla, salsas aparte, etc."
+                                             value={notes}
+                                             onChange={(e) => setNotes(e.target.value)}
+                                             className="w-full p-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm placeholder-white/30 focus:outline-none focus:border-[var(--color-product-extra-selected)] transition-colors resize-none"
+                                         />
+                                     </div>
+                                 )}
                             </div>
 
                             {/* Scroll Bottom Indicator */}

@@ -345,7 +345,8 @@ const menuDataQuery = `{
     hasDelivery,
     hasPickup,
     hasDineIn,
-    tableCount
+    tableCount,
+    showProductNotes
   }
 }`;
 

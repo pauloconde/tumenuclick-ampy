@@ -26,6 +26,18 @@ export default defineConfig({
       // Expose environment variables to the client (including Sanity Studio)
       'import.meta.env.SANITY_STUDIO_DEV_MODE': JSON.stringify(env.SANITY_STUDIO_DEV_MODE || 'false'),
     },
+    optimizeDeps: {
+      include: [
+        'sanity',
+        'sanity/structure',
+        '@sanity/locale-es-es',
+        '@sanity/code-input',
+        'sanity-plugin-media',
+        'styled-components',
+        'rxjs',
+        'rxjs/operators',
+      ],
+    },
     ssr: {
       noExternal: ['@magicmenu/ui']
     },

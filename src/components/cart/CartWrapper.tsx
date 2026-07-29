@@ -23,6 +23,7 @@ interface CartWrapperProps {
         hasDineIn: boolean;
         tableCount: number;
     };
+    showProductNotes?: boolean;
 }
 
 // Custom event for opening product modal (works across React islands)
@@ -33,7 +34,7 @@ export function openProductModal(data: any) {
     window.dispatchEvent(new CustomEvent(OPEN_MODAL_EVENT, { detail: data }));
 }
 
-export default function CartWrapper({ currency, phone, restaurantName, whatsappButtonText, whatsappFooterText, bestSellerLabel, newLabel, logoUrl, fulfillmentConfig }: CartWrapperProps) {
+export default function CartWrapper({ currency, phone, restaurantName, whatsappButtonText, whatsappFooterText, bestSellerLabel, newLabel, logoUrl, fulfillmentConfig, showProductNotes }: CartWrapperProps) {
     const [modalProduct, setModalProduct] = useState<any>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -92,6 +93,7 @@ export default function CartWrapper({ currency, phone, restaurantName, whatsappB
                 currency={currency}
                 bestSellerLabel={bestSellerLabel}
                 newLabel={newLabel}
+                showNotes={showProductNotes}
             />
         </>
     );

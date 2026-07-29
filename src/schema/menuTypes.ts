@@ -85,6 +85,13 @@ export const configType = defineType({
       description: 'Número máximo de mesas para la selección (si está habilitado Comer en Local).',
       initialValue: 0
     }),
+    defineField({
+      name: 'showProductNotes',
+      title: 'Mostrar Campo de Observaciones en Productos',
+      type: 'boolean',
+      description: 'Muestra u oculta la casilla de notas/observaciones que el cliente puede escribir en el modal de producto.',
+      initialValue: true
+    }),
   ],
 });
 
