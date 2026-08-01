@@ -4,6 +4,7 @@ import SectionFactory from "../components/menu/factories/SectionFactory.astro";
 import ProductBuilderSectionOrder from "../components/menu/ProductBuilderSectionOrder";
 import BestSellersSectionOrder from "../components/menu/BestSellersSectionOrder";
 import HeroSectionOrder from "../components/menu/HeroSectionOrder";
+import HeroCarouselSection from "../components/menu/HeroCarouselSection";
 import SeasonalSection from "../components/menu/SeasonalSection.astro";
 import SplashScreen from "../components/layout/SplashScreen.astro";
 import MenuController from "../components/menu/MenuController";
@@ -118,6 +119,7 @@ const logoOverlayUrl = brand?.logoOverlay
   keywords={brand?.keywords}
   menuData={menuData}
 >
+  <HeroCarouselSection client:load items={menuData.heroCarousel} currencySymbol={currencySymbol} />
   <BestSellersSectionOrder client:load menuData={menuData} />
   {
     /* Show HeroSpecial only if there's exactly 1 seasonal item, otherwise show SeasonalSpecials scrollable section */

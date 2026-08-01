@@ -30,7 +30,8 @@ import {
   themeUIType,
   themeOrderingType,
   themeProductBuilderType,
-  fontType
+  fontType,
+  heroItemType
 } from './menuTypes';
 import { categoryType } from './categoryTypes';
 import { productType } from './productTypes';
@@ -41,6 +42,7 @@ export const schema = [
   menuType,
   typographyType,
   themeDocumentType,
+  heroItemType,
   builderOptionType,
   builderStepType,
   productBuilderType,

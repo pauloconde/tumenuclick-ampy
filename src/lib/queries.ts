@@ -70,6 +70,47 @@ const menuDataQuery = `{
   "menu": *[_type == "menu" && _id == "menu"][0]{
     currencySymbol,
     priceDivider,
+    heroCarousel[]{
+      title,
+      thumbnail,
+      "thumbVideoFileUrl": thumbVideoFile.asset->url,
+      mediaType,
+      "videoFileUrl": videoFile.asset->url,
+      videoUrl,
+      fullImage,
+      linkedProduct->{
+        name,
+        "slug": slug.current,
+        price,
+        price2,
+        price3,
+        description,
+        imgSrc,
+        protein,
+        extras,
+        extrasMin,
+        extrasIncluded,
+        extrasMax,
+        extrasTitleSingular,
+        extrasTitlePlural,
+        optionGroups,
+        variantGroups,
+        optionGroupsRefs[]->{
+          title,
+          showTitle,
+          options[]{ name, price, isDefault }
+        },
+        extraGroupsRefs[]->{
+          titleSingular,
+          titlePlural,
+          extras[]{ name, price, isRecommended },
+          min,
+          included,
+          max,
+          allowQuantity
+        }
+      }
+    },
     seasonalSpecials{
       title,
       subtitle,
@@ -422,6 +463,7 @@ export async function getMenuData() {
       showCategoriesPage: data.menu.showCategoriesPage,
       categoriesLayout: data.menu.categoriesLayout,
       categoriesLayoutConfig: data.menu.categoriesLayoutConfig,
+      heroCarousel: data.menu.heroCarousel || [],
       // Add brand info if needed elsewhere, or keep it flat if that's what components expect
       brand: {
         name: data.brand.name,

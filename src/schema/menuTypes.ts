@@ -1150,11 +1150,104 @@ export const brandType = defineType({
   ],
 });
 
+export const heroItemType = defineType({
+  name: 'heroItem',
+  title: 'Elemento del Carrusel Hero',
+  type: 'object',
+  fields: [
+    defineField({
+      name: 'title',
+      title: 'Título / Etiqueta',
+      type: 'string',
+      description: 'Título opcional que se muestra en la miniatura o al expandir.'
+    }),
+    defineField({
+      name: 'thumbnail',
+      title: 'Imagen de Miniatura (GIF o Cuadrada 1:1)',
+      type: 'image',
+      options: { hotspot: true },
+      description: 'Imagen cuadrada (GIF animado o estática) que se muestra en la barra del carrusel superior.'
+    }),
+    defineField({
+      name: 'thumbVideoFile',
+      title: 'Video de Miniatura MP4 (Cuadrado 1:1)',
+      type: 'file',
+      options: { accept: 'video/mp4,video/x-m4v,video/*' },
+      description: 'Video MP4 en formato cuadrado (1:1) para usar como miniatura animada en el carrusel.'
+    }),
+    defineField({
+      name: 'mediaType',
+      title: 'Tipo de Contenido Fullscreen',
+      type: 'string',
+      options: {
+        list: [
+          { title: 'Video (MP4 o Archivo Sanity)', value: 'video' },
+          { title: 'Imagen HD / GIF HD', value: 'image' }
+        ],
+        layout: 'radio'
+      },
+      initialValue: 'video',
+      validation: Rule => Rule.required()
+    }),
+    defineField({
+      name: 'videoFile',
+      title: 'Archivo de Video (MP4)',
+      type: 'file',
+      options: { accept: 'video/mp4,video/x-m4v,video/*' },
+      description: 'Sube un video corto MP4 a Sanity (Recomendado).',
+      hidden: ({ parent }) => parent?.mediaType !== 'video'
+    }),
+    defineField({
+      name: 'videoUrl',
+      title: 'URL de Video (Alternativa Externa)',
+      type: 'url',
+      description: 'URL externa del video MP4 si no lo subes directamente a Sanity.',
+      hidden: ({ parent }) => parent?.mediaType !== 'video'
+    }),
+    defineField({
+      name: 'fullImage',
+      title: 'Imagen Completa / HD',
+      type: 'image',
+      options: { hotspot: true },
+      description: 'Imagen en alta resolución para mostrar a pantalla completa (si el tipo es Imagen).',
+      hidden: ({ parent }) => parent?.mediaType !== 'image'
+    }),
+    defineField({
+      name: 'linkedProduct',
+      title: 'Producto / Plato Vinculado (Opcional)',
+      type: 'reference',
+      to: [{ type: 'product' }],
+      description: 'Si se selecciona, se mostrará un botón en la vista a pantalla completa para ver y pedir directamente este plato.'
+    })
+  ],
+  preview: {
+    select: {
+      title: 'title',
+      media: 'thumbnail',
+      mediaType: 'mediaType'
+    },
+    prepare({ title, media, mediaType }) {
+      return {
+        title: title || 'Elemento sin título',
+        subtitle: `Tipo: ${mediaType === 'video' ? '📹 Video' : '🖼️ Imagen'}`,
+        media
+      };
+    }
+  }
+});
+
 export const menuType = defineType({
   name: 'menu',
   title: 'Configuración del Menú',
   type: 'document',
   fields: [
+    defineField({
+      name: 'heroCarousel',
+      title: 'Carrusel Hero Superior (Móvil / Historias)',
+      type: 'array',
+      of: [{ type: 'heroItem' }],
+      description: 'Agrega y reordena los elementos del carrusel superior. Cada uno cuenta con una miniatura (GIF o imagen) y contenido multimedia en pantalla completa.'
+    }),
     defineField({ name: 'currencySymbol', type: 'string', title: 'Símbolo de Moneda' }),
     defineField({ name: 'priceDivider', type: 'string', title: 'Divisor de Precio' }),
     defineField({ name: 'seasonalSpecials', title: 'Especiales de Temporada', type: 'seasonalSpecials' }),
