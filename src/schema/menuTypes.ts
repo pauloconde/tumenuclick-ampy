@@ -1223,14 +1223,19 @@ export const heroItemType = defineType({
   preview: {
     select: {
       title: 'title',
-      media: 'thumbnail',
+      productName: 'linkedProduct.name',
+      productCode: 'linkedProduct.subtitle',
+      productMedia: 'linkedProduct.imgSrc',
+      thumbnail: 'thumbnail',
       mediaType: 'mediaType'
     },
-    prepare({ title, media, mediaType }) {
+    prepare({ title, productName, productCode, productMedia, thumbnail, mediaType }) {
+      const displayTitle = title || (productName ? `${productName}${productCode ? ` (${productCode})` : ''}` : 'Historia Hero');
+      const displaySub = `${mediaType === 'video' ? '📹 Video' : '🖼️ Imagen'}${productName ? ` • ${productName}` : ''}`;
       return {
-        title: title || 'Elemento sin título',
-        subtitle: `Tipo: ${mediaType === 'video' ? '📹 Video' : '🖼️ Imagen'}`,
-        media
+        title: displayTitle,
+        subtitle: displaySub,
+        media: thumbnail || productMedia
       };
     }
   }

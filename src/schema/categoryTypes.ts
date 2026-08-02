@@ -6,6 +6,7 @@ export const categoryType = defineType({
   type: 'document',
   fields: [
     defineField({ name: 'title', type: 'string', title: 'Título Sección' }),
+    defineField({ name: 'slug', type: 'slug', title: 'Slug / Identificador URL', options: { source: 'title', maxLength: 90 } }),
     defineField({ name: 'subtitle', type: 'string', title: 'Subtítulo' }),
     defineField({ name: 'icon', type: 'image', title: 'Ícono de la Categoría', options: { hotspot: true }, description: 'Usado en el layout de Grid de Iconos' }),
     defineField({

@@ -30,3 +30,6 @@ pnpm-debug.log*
 .env.local
 .env*.local
 .vercel
+
+productos/
+tmp/
