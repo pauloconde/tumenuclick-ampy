@@ -462,3 +462,16 @@ h4 {
   white-space: nowrap;
   border-width: 0;
 }
+
+/* Ocultar controles nativos de reproducción en iOS / Safari WebKit */
+video::-webkit-media-controls,
+video::-webkit-media-controls-start-playback-button,
+video::-webkit-media-controls-play-button,
+video::-webkit-media-controls-panel,
+video::-webkit-media-controls-container,
+video::-webkit-media-controls-overlay-play-button {
+  display: none !important;
+  -webkit-appearance: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}

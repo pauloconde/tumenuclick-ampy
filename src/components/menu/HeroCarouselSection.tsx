@@ -110,8 +110,8 @@ export default function HeroCarouselSection({
         });
     };
 
-    // Duplicamos el array para lograr un bucle infinito contínuo y fluido (Marquee)
-    const repeatCount = 4;
+    // Duplicamos el array de forma optimizada para lograr un bucle infinito continuo sin saturar decodificadores móviles
+    const repeatCount = Math.max(2, Math.ceil(8 / items.length));
     const displayItems = Array(repeatCount).fill(items).flat();
     const shiftPercentage = -(100 / repeatCount);
 
@@ -126,7 +126,7 @@ export default function HeroCarouselSection({
                         x: {
                             repeat: Infinity,
                             repeatType: "loop",
-                            duration: Math.max(12, items.length * 3.5),
+                            duration: Math.max(10, items.length * 3),
                             ease: "linear",
                         },
                     }}
@@ -147,6 +147,13 @@ export default function HeroCarouselSection({
                                         loop
                                         muted
                                         playsInline
+                                        // @ts-ignore
+                                        webkit-playsinline="true"
+                                        disablePictureInPicture
+                                        disableRemotePlayback
+                                        preload="auto"
+                                        onCanPlay={(e) => { e.currentTarget.play().catch(() => {}); }}
+                                        onLoadedData={(e) => { e.currentTarget.play().catch(() => {}); }}
                                         className="w-full h-full object-cover rounded-none border-0 shadow-none pointer-events-none"
                                     />
                                 ) : (
