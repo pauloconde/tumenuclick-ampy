@@ -568,8 +568,8 @@ export const themeApplicationType = defineType({
     colorField('textSection', 'Títulos de Secciones'),
     colorField('textPrice', 'Precios (Default)'),
     colorField('contentBg', 'Fondo de Contenido'),
-    colorField('menuItemBg', 'Fondo de Items de Menú'),
-    colorField('menuItemBorder', 'Borde de Items de Menú'),
+    colorField('menuItemBg', 'Fondo de Items del Catálogo'),
+    colorField('menuItemBorder', 'Borde de Items del Catálogo'),
     colorField('productBackgroundColor', 'Color de Fondo Global Productos'),
   ],
 });
@@ -604,7 +604,7 @@ export const themeBestSellersType = defineType({
     colorField('bg', 'Fondo de la Sección'),
     colorField('textTitle', 'Título de la Sección'),
     colorField('cardBg', 'Cards - Fondo'),
-    colorField('textName', 'Cards - Nombre del Plato'),
+    colorField('textName', 'Cards - Nombre del Producto'),
     colorField('textPrice', 'Cards - Precio'),
     colorField('scrollbarThumb', 'Scrollbar - Thumb'),
     colorField('scrollbarTrack', 'Scrollbar - Track'),
@@ -621,7 +621,7 @@ export const themeSeasonalType = defineType({
     colorField('textTitle', 'Título de la Sección'),
     colorField('textSubtitle', 'Texto Descriptivo'),
     colorField('cardBg', 'Cards - Fondo'),
-    colorField('textName', 'Cards - Nombre del Plato'),
+    colorField('textName', 'Cards - Nombre del Producto'),
     colorField('textPrice', 'Cards - Precio'),
     colorField('scrollbarThumb', 'Scrollbar - Thumb'),
     colorField('scrollbarTrack', 'Scrollbar - Track'),
@@ -997,7 +997,7 @@ export const typographyType = defineType({
       name: 'sectionTitle',
       title: 'Títulos de Sección',
       type: 'font',
-      description: 'Fuente para los encabezados de las secciones del menú.'
+      description: 'Fuente para los encabezados de las secciones del catálogo.'
     }),
     defineField({
       name: 'productTitle',
@@ -1139,7 +1139,7 @@ export const brandType = defineType({
     defineField({ name: 'whatsappNumber', title: 'Número de WhatsApp', type: 'string', group: 'general' }),
     defineField({ name: 'whatsappMessage', title: 'Mensaje inicial', type: 'string', group: 'general' }),
     defineField({ name: 'cartWhatsappButtonText', type: 'string', title: 'Texto del Botón de Pedidos', description: 'Texto que aparece en el botón del carrito (ej: "Enviar por WhatsApp")', initialValue: 'Enviar por WhatsApp', group: 'general' }),
-    defineField({ name: 'whatsappFooterText', type: 'string', title: 'Pie de página de WhatsApp', description: 'Texto al final del mensaje (ej: "_Enviado desde el menú digital_")', initialValue: '_Enviado desde el menú digital_', group: 'general' }),
+    defineField({ name: 'whatsappFooterText', type: 'string', title: 'Pie de página de WhatsApp', description: 'Texto al final del mensaje (ej: "_Enviado desde el catálogo digital_")', initialValue: '_Enviado desde el catálogo digital_', group: 'general' }),
     defineField({ name: 'addresses', title: 'Sucursales', type: 'array', of: [{ type: 'address' }], group: 'general' }),
     defineField({ name: 'addressesSectionTitle', title: 'Título Sucursales', type: 'string', group: 'general' }),
 
@@ -1214,10 +1214,10 @@ export const heroItemType = defineType({
     }),
     defineField({
       name: 'linkedProduct',
-      title: 'Producto / Plato Vinculado (Opcional)',
+      title: 'Producto Vinculado (Opcional)',
       type: 'reference',
       to: [{ type: 'product' }],
-      description: 'Si se selecciona, se mostrará un botón en la vista a pantalla completa para ver y pedir directamente este plato.'
+      description: 'Si se selecciona, se mostrará un botón en la vista a pantalla completa para ver y pedir directamente este producto.'
     })
   ],
   preview: {
@@ -1243,7 +1243,7 @@ export const heroItemType = defineType({
 
 export const menuType = defineType({
   name: 'menu',
-  title: 'Configuración del Menú',
+  title: 'Configuración del Catálogo',
   type: 'document',
   fields: [
     defineField({
@@ -1323,7 +1323,7 @@ export const menuType = defineType({
   ],
   preview: {
     prepare() {
-      return { title: 'Configuración del Menú' };
+      return { title: 'Configuración del Catálogo' };
     }
   },
 });

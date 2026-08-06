@@ -2,7 +2,7 @@ import { defineField, defineType } from 'sanity';
 
 export const categoryType = defineType({
   name: 'category',
-  title: 'Categoría de Menú',
+  title: 'Categoría de Catálogo',
   type: 'document',
   fields: [
     defineField({ name: 'title', type: 'string', title: 'Título Sección' }),
@@ -64,10 +64,10 @@ export const categoryType = defineType({
     }),
     defineField({
       name: 'sortAlphabetically',
-      title: 'Ordenar Platos Alfabéticamente',
+      title: 'Ordenar Productos Alfabéticamente',
       type: 'boolean',
       initialValue: false,
-      description: 'Si está activado, los platos de esta sección se mostrarán en orden alfabético (A–Z) ignorando el orden manual.'
+      description: 'Si está activado, los productos de esta sección se mostrarán en orden alfabético (A–Z) ignorando el orden manual.'
     }),
     defineField({
       name: 'products',

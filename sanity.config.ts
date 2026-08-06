@@ -28,7 +28,7 @@ export default defineConfig({
           .items([
             // ── Contenido Principal ──
             S.listItem()
-              .title('Menú')
+              .title('Catálogo')
               .id('menu')
               .child(
                 S.document()

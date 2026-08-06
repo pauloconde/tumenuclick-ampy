@@ -4,7 +4,7 @@ const isDevMode = import.meta.env.SANITY_STUDIO_DEV_MODE === 'true';
 
 export const productType = defineType({
     name: 'product',
-    title: 'Producto / Plato',
+    title: 'Producto',
     type: 'document',
     fields: [
         defineField({ name: 'name', type: 'string', title: 'Nombre' }),
@@ -12,7 +12,7 @@ export const productType = defineType({
             name: 'slug',
             type: 'slug',
             title: 'ID de Rastreo (GA4)',
-            description: 'Generar una vez. ID inmutable: ID_RESTAURANTE + NOMBRE_PLATO.',
+            description: 'Generar una vez. ID inmutable: ID_RESTAURANTE + NOMBRE_PRODUCTO.',
             options: {
                 // 1. GENERACIÓN (Tu lógica que ya funciona)
                 source: async (_doc, context) => {
@@ -61,7 +61,7 @@ export const productType = defineType({
         defineField({ name: 'price', type: 'string', title: 'Precio / Desde' }),
         defineField({ name: 'price2', type: 'string', title: 'Precio / Hasta' }),
         defineField({ name: 'description', type: 'text', title: 'Descripción' }),
-        defineField({ name: 'imgSrc', type: 'image', title: 'Foto del Plato', options: { hotspot: true } }),
+        defineField({ name: 'imgSrc', type: 'image', title: 'Foto del Producto', options: { hotspot: true } }),
         defineField({
             name: 'gallery',
             type: 'array',
@@ -73,7 +73,7 @@ export const productType = defineType({
         defineField({ name: 'availability', type: 'string', title: 'Disponibilidad' }),
         defineField({ name: 'available', type: 'boolean', title: 'Disponible', initialValue: true }),
         defineField({ name: 'isNew', type: 'boolean', title: 'Producto Nuevo', description: 'Mostrar etiqueta "Nuevo" en el producto', initialValue: false }),
-        defineField({ name: 'servings', type: 'number', title: 'Porciones / Personas', description: 'Para cuántas personas es este plato. Si está vacío o es 1, se asume individual.' }),
+        defineField({ name: 'servings', type: 'number', title: 'Porciones / Personas', description: 'Para cuántas personas es este producto. Si está vacío o es 1, se asume individual.' }),
         defineField({
             name: 'protein',
             type: 'number',
