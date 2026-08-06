@@ -147,6 +147,18 @@ export default function ProductOrderModal({
 
     // Carousel State
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+    // Lightbox Modal State for HD Fullscreen Image
+    const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+
+    // Check if product has variant groups with custom images
+    const hasVariantImages = React.useMemo(() => {
+        if (!product?.variantGroups || product.variantGroups.length === 0) return false;
+        return product.variantGroups.some(group => 
+            group.variants && group.variants.some(variant => !!variant.image)
+        );
+    }, [product]);
+
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
 
@@ -699,19 +711,27 @@ export default function ProductOrderModal({
                             </button>
 
                             {/* Image Carousel */}
-                            <div className="w-full relative flex-shrink-0 group" style={{ backgroundColor: 'var(--color-product-bg, #111827)' }}>
+                            <div
+                                className={`w-full relative flex-shrink-0 group ${hasVariantImages ? 'h-48 sm:h-56 cursor-pointer' : ''}`}
+                                style={{ backgroundColor: 'var(--color-product-bg, #111827)' }}
+                                onClick={() => {
+                                    if (hasVariantImages && allImages.length > 0) {
+                                        setIsLightboxOpen(true);
+                                    }
+                                }}
+                            >
                                 {/* Scroll Container */}
                                 <div
                                     ref={scrollContainerRef}
                                     onScroll={handleScroll}
-                                    className="flex w-full overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+                                    className={`flex w-full overflow-x-auto snap-x snap-mandatory scrollbar-hide ${hasVariantImages ? 'h-full' : ''}`}
                                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                                 >
                                     {allImages.length > 0 ? (
                                         allImages.map((imgSrc, idx) => (
                                             <div
                                                 key={idx}
-                                                className="w-full flex-shrink-0 snap-center relative"
+                                                className={`w-full flex-shrink-0 snap-center relative ${hasVariantImages ? 'h-full flex items-center justify-center' : ''}`}
                                                 style={{
                                                     backgroundColor: 'var(--color-product-bg, transparent)',
                                                     backgroundImage: 'var(--product-bg-image, none)',
@@ -731,24 +751,47 @@ export default function ProductOrderModal({
                                                 <img
                                                     src={imgSrc}
                                                     alt={`${product.name} - ${idx + 1}`}
-                                                    className="relative w-full h-full object-cover transition-opacity duration-300"
+                                                    className={`relative w-full h-full ${hasVariantImages ? 'object-contain max-h-full' : 'object-cover'} transition-opacity duration-300`}
                                                     loading={idx === 0 ? "eager" : "lazy"}
                                                     onLoad={(e) => {
                                                         e.currentTarget.style.opacity = '1';
                                                     }}
                                                     style={{ opacity: 0 }}
                                                 />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-modal-gradient-from)] to-transparent" />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-modal-gradient-from)] to-transparent pointer-events-none" />
                                             </div>
                                         ))
                                     ) : (
-                                        // Fallback if no images (shouldn't happen with placeholder logic but safety first)
+                                        // Fallback if no images
                                         <div className="w-full h-48 sm:h-64 relative bg-gray-800 flex items-center justify-center">
                                             <span className="text-gray-500">Sin imagen</span>
                                             <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-modal-gradient-from)] to-transparent" />
                                         </div>
                                     )}
                                 </div>
+
+                                {/* Lightbox Zoom Badge (Only shown when product has variant images) */}
+                                {hasVariantImages && allImages.length > 0 && (
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setIsLightboxOpen(true);
+                                        }}
+                                        title="Ver imagen completa"
+                                        className="
+                                            absolute top-4 left-4 z-20
+                                            p-2
+                                            rounded-full
+                                            bg-black/50 hover:bg-black/75 text-white
+                                            backdrop-blur-md transition-all active:scale-90 shadow-md
+                                        "
+                                    >
+                                        <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                        </svg>
+                                    </button>
+                                )}
 
                                 {/* Carousel Indicators */}
 
@@ -1341,7 +1384,6 @@ export default function ProductOrderModal({
                                                 </>
                                             );
                                         }
-
                                          const currentCount = selectedExtrasByGroup[unsatisfiedGroup.id]?.reduce((sum, e) => sum + (e.quantity || 1), 0) || 0;
                                          const missingCount = unsatisfiedGroup.min - currentCount;
                                          const title = missingCount > 1 
@@ -1354,6 +1396,39 @@ export default function ProductOrderModal({
                             </div>
                         </div>
                     </motion.div>
+
+                    {/* HD Lightbox Fullscreen Modal */}
+                    <AnimatePresence>
+                        {isLightboxOpen && allImages[currentImageIndex] && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setIsLightboxOpen(false)}
+                                className="fixed inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center p-4 backdrop-blur-md cursor-zoom-out"
+                            >
+                                <button
+                                    type="button"
+                                    onClick={() => setIsLightboxOpen(false)}
+                                    className="absolute top-6 right-6 z-[110] w-12 h-12 bg-white/20 hover:bg-white/30 text-white rounded-full flex items-center justify-center transition-colors shadow-lg"
+                                >
+                                    <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                                <div className="relative max-w-4xl max-h-[85vh] w-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+                                    <img
+                                        src={allImages[currentImageIndex]}
+                                        alt={product.name}
+                                        className="max-h-[85vh] w-auto max-w-full object-contain rounded-lg shadow-2xl"
+                                    />
+                                </div>
+                                <div className="mt-4 text-white/80 text-sm font-medium">
+                                    {product.name} {allImages.length > 1 ? `(${currentImageIndex + 1}/${allImages.length})` : ''}
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </>
             )}
         </AnimatePresence>
