@@ -87,6 +87,7 @@ const menuDataQuery = `{
         description,
         imgSrc,
         protein,
+        available,
         extras,
         extrasMin,
         extrasIncluded,
@@ -413,6 +414,9 @@ export async function getMenuData() {
       bestSeller: bestSellerSlugs.has(item.slug || '')
     });
 
+    // Helper: filtra productos no disponibles (disponible si available !== false)
+    const isAvailable = (item: any) => item && item.available !== false;
+
     return {
       currencySymbol: data.menu.currencySymbol,
       priceDivider: data.menu.priceDivider,
@@ -423,7 +427,9 @@ export async function getMenuData() {
       seasonalSpecials: data.menu.seasonalSpecials
         ? {
             ...data.menu.seasonalSpecials,
-            items: (data.menu.seasonalSpecials.items || []).map(withBestSeller)
+            items: (data.menu.seasonalSpecials.items || [])
+              .filter(isAvailable)
+              .map(withBestSeller)
           }
         : null,
       sections: (() => {
@@ -438,11 +444,12 @@ export async function getMenuData() {
           : allCategories;
 
         return ordered.map((section: any) => {
+          const availableItems = (section.items || []).filter(isAvailable);
           const items = section.sortAlphabetically
-            ? [...(section.items || [])].sort((a: any, b: any) =>
+            ? [...availableItems].sort((a: any, b: any) =>
                 (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' })
               )
-            : (section.items || []);
+            : availableItems;
           return {
             ...section,
             items: items.map(withBestSeller)
@@ -451,11 +458,13 @@ export async function getMenuData() {
       })(),
       bestSellersTitleSingular: data.menu.bestSellersTitleSingular,
       bestSellersTitlePlural: data.menu.bestSellersTitlePlural,
-      // bestSellersItems: todos son bestsellers por definición
-      bestSellersItems: (data.menu.bestSellersItems ?? []).map((item: any) => ({
-        ...item,
-        bestSeller: true
-      })),
+      // bestSellersItems: todos son bestsellers por definición (filtrando no disponibles)
+      bestSellersItems: (data.menu.bestSellersItems ?? [])
+        .filter(isAvailable)
+        .map((item: any) => ({
+          ...item,
+          bestSeller: true
+        })),
       showNewsSection: data.menu.showNewsSection,
       newsTitleSingular: data.menu.newsTitleSingular,
       newsTitlePlural: data.menu.newsTitlePlural,
@@ -463,7 +472,12 @@ export async function getMenuData() {
       showCategoriesPage: data.menu.showCategoriesPage,
       categoriesLayout: data.menu.categoriesLayout,
       categoriesLayoutConfig: data.menu.categoriesLayoutConfig,
-      heroCarousel: data.menu.heroCarousel || [],
+      heroCarousel: (data.menu.heroCarousel || []).filter((item: any) => {
+        if (item.linkedProduct && item.linkedProduct.available === false) {
+          return false;
+        }
+        return true;
+      }),
       // Add brand info if needed elsewhere, or keep it flat if that's what components expect
       brand: {
         name: data.brand.name,
