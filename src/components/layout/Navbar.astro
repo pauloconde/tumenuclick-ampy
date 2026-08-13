@@ -15,14 +15,14 @@ const logoUrl = brand?.logo
 ---
 
 <nav
-    class="sticky top-0 z-50 bg-navbar-bg shadow-md p-4 flex justify-between items-center gap-4"
+    class="sticky top-0 z-50 bg-navbar-bg shadow-md px-3 py-2 sm:px-6 sm:py-3 flex justify-between items-center gap-2 sm:gap-4"
 >
-    <div class="flex items-center flex-shrink-0">
+    <div class="flex items-center flex-shrink min-w-0">
         <h1 class="sr-only">{brand?.name || "Restaurante"}</h1>
         <img
             src={logoUrl}
             alt={brand?.name || "Logo"}
-            class="h-20 sm:h-20 w-auto object-contain transition-all duration-300"
+            class="h-12 sm:h-16 md:h-20 max-w-[48vw] sm:max-w-none w-auto object-contain transition-all duration-300"
             height="128"
             loading="eager"
             decoding="async"
@@ -31,7 +31,7 @@ const logoUrl = brand?.logo
         />
     </div>
 
-    <div class="flex items-center gap-4 flex-1 justify-end min-w-0">
+    <div class="flex items-center gap-2 sm:gap-4 flex-shrink-0 justify-end min-w-0">
         {
             sections && sections.length > 1 && (
                 <div class="relative">
@@ -40,7 +40,7 @@ const logoUrl = brand?.logo
                     </label>
                     <select
                         id="section-select"
-                        class="navbar-select appearance-none bg-navbar-select-bg border border-navbar-select-border text-navbar-select-text py-2 px-4 pr-8 rounded-[var(--radius-navbar-select)] leading-tight focus:outline-none truncate max-w-[140px] sm:max-w-xs"
+                        class="navbar-select appearance-none bg-navbar-select-bg border border-navbar-select-border text-navbar-select-text py-1.5 px-3 pr-7 sm:py-2 sm:px-4 sm:pr-8 text-xs sm:text-sm rounded-[var(--radius-navbar-select)] leading-tight focus:outline-none truncate max-w-[130px] sm:max-w-xs"
                     >
                         <option value="" disabled selected>
                             Ir a...
