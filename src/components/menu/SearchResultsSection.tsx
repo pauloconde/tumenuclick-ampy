@@ -146,7 +146,7 @@ export default function SearchResultsSection({
                                 {/* Category Badge showing where the product belongs */}
                                 <div className="mb-1.5 flex items-center justify-between px-1">
                                     <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-white/10 text-[var(--color-text-section)] border border-white/10">
-                                        📁 {sectionName}
+                                        {sectionName}
                                     </span>
                                 </div>
 
