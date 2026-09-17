@@ -3,7 +3,10 @@ import React, { useState, useEffect } from 'react';
 import CategoriesGrid from './categoriesLayouts/CategoriesGrid';
 import ReactSectionFactory from './factories/ReactSectionFactory';
 import { motion, AnimatePresence } from 'framer-motion';
-import { selectedCategory, normalizeSlug } from '../../stores/menuStore';
+import { useStore } from '@nanostores/react';
+import { selectedCategory, normalizeSlug, searchQuery } from '../../stores/menuStore';
+import MenuSearchBar from './MenuSearchBar';
+import SearchResultsSection from './SearchResultsSection';
 
 interface MenuControllerProps {
     sections: any[];
@@ -30,6 +33,7 @@ const MenuController: React.FC<MenuControllerProps> = ({
 }) => {
     const [selectedSection, setSelectedSection] = useState<any | null>(null);
     const lastGridScroll = React.useRef(0);
+    const activeSearchQuery = useStore(searchQuery);
 
     // Subscribe to external store updates AND handle URL sync
     useEffect(() => {
@@ -101,25 +105,6 @@ const MenuController: React.FC<MenuControllerProps> = ({
         };
     }, [sections]);
 
-    // ... Legacy Mode Check ... 
-    if (!showCategoriesPage) {
-        return (
-            <div className="space-y-10">
-                {sections.map((section: any) => (
-                    <ReactSectionFactory
-                        key={section._key || section._id || section.title}
-                        section={section}
-                        globalLayoutPreference={defaultSectionLayout}
-                        currencySymbol={currencySymbol}
-                        priceDivider={priceDivider}
-                        bestSellersTitleSingular={bestSellersTitleSingular}
-                        newsTitleSingular={newsTitleSingular}
-                    />
-                ))}
-            </div>
-        );
-    }
-
     // Helper to handle internal selection (clicking a card)
     const handleCategorySelect = (section: any) => {
         // Save current scroll position before navigating away
@@ -137,13 +122,68 @@ const MenuController: React.FC<MenuControllerProps> = ({
         selectedCategory.set(null);
         // We do NOT scroll to top here, we let the Grid restore its position
     };
-    // We do NOT scroll to top here, we let the Grid restore its position
+
+    const isSearching = Boolean(activeSearchQuery && activeSearchQuery.trim().length > 0);
+
+    // ... Legacy Mode Check ... 
+    if (!showCategoriesPage) {
+        return (
+            <div className="space-y-10">
+                <MenuSearchBar className="pt-1 mb-6" />
+
+                {isSearching ? (
+                    <SearchResultsSection
+                        sections={sections}
+                        query={activeSearchQuery}
+                        currencySymbol={currencySymbol}
+                        priceDivider={priceDivider}
+                        bestSellersTitleSingular={bestSellersTitleSingular}
+                        newsTitleSingular={newsTitleSingular}
+                    />
+                ) : (
+                    sections.map((section: any) => (
+                        <ReactSectionFactory
+                            key={section._key || section._id || section.title}
+                            section={section}
+                            globalLayoutPreference={defaultSectionLayout}
+                            currencySymbol={currencySymbol}
+                            priceDivider={priceDivider}
+                            bestSellersTitleSingular={bestSellersTitleSingular}
+                            newsTitleSingular={newsTitleSingular}
+                        />
+                    ))
+                )}
+            </div>
+        );
+    }
 
     // Categories Page Mode
     return (
         <div>
+            {/* Search Bar on top of categories/views */}
+            <div className="pt-1 pb-1 mb-4 md:mb-6">
+                <MenuSearchBar />
+            </div>
+
             <AnimatePresence mode="wait">
-                {!selectedSection ? (
+                {isSearching ? (
+                    <motion.div
+                        key="search-results"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.25, ease: "easeOut" }}
+                    >
+                        <SearchResultsSection
+                            sections={sections}
+                            query={activeSearchQuery}
+                            currencySymbol={currencySymbol}
+                            priceDivider={priceDivider}
+                            bestSellersTitleSingular={bestSellersTitleSingular}
+                            newsTitleSingular={newsTitleSingular}
+                        />
+                    </motion.div>
+                ) : !selectedSection ? (
                     <motion.div
                         key="categories-grid"
                         initial={{ opacity: 0, scale: 0.95 }}
@@ -156,7 +196,6 @@ const MenuController: React.FC<MenuControllerProps> = ({
                         }}
                     >
                         <CategoriesGrid
-                            // ...
                             sections={sections}
                             onCategorySelect={handleCategorySelect}
                             layout={categoriesLayout}
@@ -199,7 +238,7 @@ const MenuController: React.FC<MenuControllerProps> = ({
             </AnimatePresence>
 
             {/* Sticky Back Button - Rendered outside the main content to avoid transform issues */}
-            {selectedSection && (
+            {selectedSection && !isSearching && (
                 <motion.button
                     key="back-button"
                     initial={{ opacity: 0, x: -20 }}
@@ -218,7 +257,7 @@ const MenuController: React.FC<MenuControllerProps> = ({
                     <span className="font-medium text-base">Volver</span>
                 </motion.button>
             )}
-        </div >
+        </div>
     );
 };
 

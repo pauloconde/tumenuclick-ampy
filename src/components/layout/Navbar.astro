@@ -32,6 +32,29 @@ const logoUrl = brand?.logo
     </div>
 
     <div class="flex items-center gap-2 sm:gap-4 flex-shrink-0 justify-end min-w-0">
+        {/* Quick Search Button */}
+        <button
+            id="navbar-search-btn"
+            type="button"
+            aria-label="Buscar producto"
+            class="flex items-center justify-center p-2 rounded-[var(--radius-navbar-select)] bg-navbar-select-bg border border-navbar-select-border text-navbar-select-text hover:opacity-80 active:scale-95 transition-all shadow-sm"
+        >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-4 h-4 sm:w-5 sm:h-5 text-navbar-select-icon"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M21 21l-4.35-4.35m1.85-5.65a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+            </svg>
+        </button>
+
         {
             sections && sections.length > 1 && (
                 <div class="relative">
@@ -74,6 +97,90 @@ const logoUrl = brand?.logo
 
 <script>
     import { selectedCategory } from "../../stores/menuStore";
+
+    // Search button focus behavior
+    let searchHighlightTimeout: any = null;
+    let searchScrollTimeout: any = null;
+    let searchSafetyTimeout: any = null;
+
+    const searchBtn = document.getElementById("navbar-search-btn");
+    if (searchBtn) {
+        searchBtn.addEventListener("click", () => {
+            const searchInput = document.getElementById(
+                "menu-search-input",
+            ) as HTMLInputElement | null;
+            if (!searchInput) return;
+
+            // Limpiar timers previos si el usuario hace click repetido
+            clearTimeout(searchHighlightTimeout);
+            clearTimeout(searchScrollTimeout);
+            clearTimeout(searchSafetyTimeout);
+
+            // Calcular posición descontando la altura del Navbar fijo
+            const nav = document.querySelector("nav");
+            const navHeight = nav ? nav.getBoundingClientRect().height : 70;
+            const inputRect = searchInput.getBoundingClientRect();
+            const targetScrollY = Math.max(0, window.scrollY + inputRect.top - navHeight - 16);
+
+            const triggerHighlightAndFocus = () => {
+                try {
+                    searchInput.focus({ preventScroll: true });
+                } catch {
+                    searchInput.focus();
+                }
+
+                // Disparar animación de resaltado visible
+                searchInput.classList.remove("search-input-highlight");
+                void searchInput.offsetWidth;
+                searchInput.classList.add("search-input-highlight");
+
+                setTimeout(() => {
+                    searchInput.classList.remove("search-input-highlight");
+                }, 1400);
+            };
+
+            // Si ya estamos prácticamente en la posición visible, animar tras un breve instante
+            if (Math.abs(window.scrollY - targetScrollY) < 20) {
+                searchHighlightTimeout = setTimeout(triggerHighlightAndFocus, 200);
+                return;
+            }
+
+            // Mismo desplazamiento nativo que el botón "volver arriba"
+            let finished = false;
+
+            const onFinish = () => {
+                if (finished) return;
+                finished = true;
+                window.removeEventListener("scrollend", onFinish);
+                window.removeEventListener("scroll", onScroll);
+                clearTimeout(searchScrollTimeout);
+                clearTimeout(searchSafetyTimeout);
+
+                // Retrasar la animación (450ms) para que ocurra con el scroll completamente detenido y a la vista
+                searchHighlightTimeout = setTimeout(triggerHighlightAndFocus, 450);
+            };
+
+            const onScroll = () => {
+                clearTimeout(searchScrollTimeout);
+                // Si está en el destino o el scroll se detuvo
+                const isNearTarget = Math.abs(window.scrollY - targetScrollY) <= 4;
+                searchScrollTimeout = setTimeout(onFinish, isNearTarget ? 100 : 250);
+            };
+
+            // Evento moderno nativo scrollend (se dispara exactamente cuando termina el smooth scroll)
+            window.addEventListener("scrollend", onFinish, { once: true });
+            // Detector de final de scroll para navegadores que no emitan scrollend
+            window.addEventListener("scroll", onScroll, { passive: true });
+            // Timeout de seguridad amplio (3.5s) para páginas largas
+            searchSafetyTimeout = setTimeout(onFinish, 3500);
+
+            // Desplazamiento idéntico al botón volver arriba
+            window.scrollTo({
+                top: targetScrollY,
+                behavior: "smooth"
+            });
+        });
+    }
 
     const select = document.getElementById(
         "section-select",

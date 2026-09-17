@@ -182,7 +182,6 @@ export default function ProductCardOrder({
 
     return (
         <motion.div
-            layout
             className="menu-item-inner-highlight flex items-start space-x-4 cursor-pointer p-3 rounded-xl relative group"
             style={{
                 backgroundColor: 'var(--color-menu-item-bg)',
